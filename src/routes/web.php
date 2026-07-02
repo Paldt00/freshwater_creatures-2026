@@ -1,23 +1,25 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FishController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
-use Livewire\Livewire;
-use Illuminate\Support\Facades\Response;
 
-/* NOTE: Do Not Remove
-/ Livewire asset handling if using sub folder in domain
-*/
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Livewire::setUpdateRoute(function ($handle) {
-    return Route::post(config('app.asset_prefix') . '/livewire/update', $handle);
-});
+Route::get('/wilayah', [RegionController::class, 'index'])->name('regions.index');
+Route::get('/wilayah/{region:slug}', [RegionController::class, 'show'])->name('regions.show');
 
-Livewire::setScriptRoute(function ($handle) {
-    return Route::get(config('app.asset_prefix') . '/livewire/livewire.js', $handle);
-});
-/*
-/ END
-*/
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/kategori', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('/kategori/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+
+Route::get('/ikan', [FishController::class, 'index'])->name('fishes.index');
+Route::get('/ikan/{fish:slug}', [FishController::class, 'show'])->name('fishes.show');
+
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+// Alias sesuai istilah teknis BRD
+Route::get('/region/{region:slug}', [RegionController::class, 'show'])->name('regions.show.legacy');
+Route::get('/fish/{fish:slug}', [FishController::class, 'show'])->name('fishes.show.legacy');

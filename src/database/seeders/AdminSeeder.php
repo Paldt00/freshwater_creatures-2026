@@ -6,21 +6,17 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::updateOrCreate(
-            [
-                'email' => 'admin@ikan.test',
-            ],
+        User::query()->updateOrCreate(
+            ['email' => 'admin@ikan.test'],
             [
                 'name' => 'Administrator',
                 'password' => Hash::make('password'),
                 'is_admin' => true,
             ]
         );
-
-        $admin->syncRoles(['super_admin']);
     }
 }
