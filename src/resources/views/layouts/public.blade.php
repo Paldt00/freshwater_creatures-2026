@@ -11,6 +11,8 @@
             --blue: #0f4c75;
             --cyan: #00b4d8;
             --green: #2dc653;
+            --red: #ef4444;
+            --yellow: #f59e0b;
             --soft: #f4fbff;
             --text: #1f2937;
             --muted: #6b7280;
@@ -88,6 +90,7 @@
             gap: 14px;
             color: var(--muted);
             font-weight: 700;
+            flex-wrap: wrap;
         }
 
         .nav-menu a:hover {
@@ -109,7 +112,8 @@
         }
 
         .nav-search button,
-        .btn {
+        .btn,
+        .logout-btn {
             border: none;
             border-radius: 999px;
             padding: 10px 16px;
@@ -126,6 +130,11 @@
             background: white;
             color: var(--blue);
             border: 1px solid var(--border);
+        }
+
+        .logout-btn {
+            background: var(--red);
+            font-size: 14px;
         }
 
         .container {
@@ -257,6 +266,21 @@
             font-weight: 800;
         }
 
+        .badge.pending {
+            background: #fff7ed;
+            color: var(--yellow);
+        }
+
+        .badge.approved {
+            background: #ecfdf5;
+            color: var(--green);
+        }
+
+        .badge.rejected {
+            background: #fef2f2;
+            color: var(--red);
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -326,7 +350,9 @@
             font-weight: 800;
         }
 
-        .content-box {
+        .content-box,
+        .form-card,
+        .table-card {
             background: white;
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -334,9 +360,115 @@
             box-shadow: var(--shadow);
         }
 
-        .content-box h2 {
+        .content-box h2,
+        .form-card h2 {
             color: var(--navy);
             margin-top: 0;
+        }
+
+        .auth-wrap {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            outline: none;
+            font: inherit;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0, 180, 216, .12);
+        }
+
+        .error {
+            color: var(--red);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .alert {
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .alert.success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert.danger {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--navy);
+            background: #f8fafc;
+            font-size: 14px;
+        }
+
+        td {
+            color: var(--text);
         }
 
         .empty {
@@ -382,7 +514,8 @@
             .grid-3,
             .grid-4,
             .stats,
-            .detail-layout {
+            .detail-layout,
+            .form-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -395,6 +528,8 @@
 <body>
 @php
     $layoutSetting = \App\Models\WebSetting::query()->first();
+    $authUser = auth()->user();
+    $isAdmin = $authUser && ($authUser->is_admin || $authUser->hasRole('super_admin'));
 @endphp
 
 <nav class="navbar">
@@ -415,7 +550,25 @@
             <a href="{{ route('regions.index') }}">Wilayah</a>
             <a href="{{ route('categories.index') }}">Kategori</a>
             <a href="{{ route('fishes.index') }}">Ikan</a>
-            <a href="/admin">Admin</a>
+
+            @auth
+                @if(! $isAdmin)
+                    <a href="{{ route('creature-requests.create') }}">Ajukan Data</a>
+                    <a href="{{ route('creature-requests.index') }}">Request Saya</a>
+                @endif
+
+                @if($isAdmin)
+                    <a href="/admin">Admin</a>
+                @endif
+
+                <form action="{{ route('public.logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('public.login.form') }}">Login</a>
+                <a href="{{ route('public.register.form') }}">Register</a>
+            @endauth
         </div>
 
         <form action="{{ route('search') }}" method="GET" class="nav-search">
@@ -426,6 +579,12 @@
 </nav>
 
 <main>
+    @if(session('success'))
+        <div class="container" style="padding-bottom: 0;">
+            <div class="alert success">{{ session('success') }}</div>
+        </div>
+    @endif
+
     @yield('content')
 </main>
 
@@ -433,6 +592,7 @@
     <div class="footer-inner">
         <strong>{{ $layoutSetting?->site_name ?? 'Sistem Informasi Ikan Air Tawar' }}</strong>
         <p>{{ $layoutSetting?->footer_text ?? 'Website informasi ikan air tawar berbasis Laravel dan Filament.' }}</p>
+
         @if($layoutSetting?->contact_email)
             <p>Kontak: {{ $layoutSetting->contact_email }}</p>
         @endif
