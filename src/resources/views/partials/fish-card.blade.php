@@ -1,4 +1,4 @@
-<a href="{{ route('fishes.show', $fish) }}" class="card">
+<a href="{{ route('fishes.show', $fish->slug) }}" class="card">
     <div class="thumb">
         @if($fish->image)
             <img src="{{ asset('storage/' . $fish->image) }}" alt="{{ $fish->name }}">
@@ -15,10 +15,12 @@
         @endif
 
         <div class="badge-row">
-            <span class="badge">{{ $fish->region?->name ?? '-' }}</span>
-            <span class="badge">{{ $fish->category?->name ?? '-' }}</span>
+            <span class="badge">🗺️ {{ $fish->region?->name ?? '-' }}</span>
+            <span class="badge">🏷️ {{ $fish->category?->name ?? '-' }}</span>
         </div>
 
-        <p>{{ \Illuminate\Support\Str::limit(strip_tags($fish->description), 110) }}</p>
+        <p>
+            {{ \Illuminate\Support\Str::limit(strip_tags($fish->description), 115) ?: 'Deskripsi ikan belum tersedia.' }}
+        </p>
     </div>
 </a>
