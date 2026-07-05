@@ -4,11 +4,73 @@
 
 @section('content')
 @php
-    $habitatLocations = collect(preg_split('/[\/,;]/', (string) $fish->habitat))
+    $habitatLocations = collect(
+        preg_split('/[\/,;]/', (string) $fish->habitat)
+    )
         ->map(fn ($item) => trim($item))
         ->filter()
         ->unique()
         ->values();
+
+    $conservationStyle = match($fish->conservation_status) {
+        'extinct' =>
+            'background:#f3f4f6;color:#374151;',
+
+        'endangered' =>
+            'background:#fef2f2;color:#dc2626;',
+
+        'least_concern' =>
+            'background:#ecfdf5;color:#16a34a;',
+
+        default =>
+            'background:#fff7ed;color:#d97706;',
+    };
+
+    $conservationDescription = match(
+        $fish->conservation_status
+    ) {
+        'extinct' =>
+            'Spesies dinyatakan telah punah dan tidak lagi ditemukan hidup.',
+
+        'endangered' =>
+            'Spesies menghadapi risiko kepunahan yang tinggi dan memerlukan perlindungan.',
+
+        'least_concern' =>
+            'Spesies memiliki risiko kepunahan yang relatif rendah.',
+
+        default =>
+            'Status kelestarian ikan ini belum ditentukan.',
+    };
+
+    $biogeographyStyle = match($fish->biogeography) {
+        'native' =>
+            'background:#eff6ff;color:#2563eb;',
+
+        'endemic' =>
+            'background:#ecfdf5;color:#15803d;',
+
+        'introduction' =>
+            'background:#fff7ed;color:#d97706;',
+
+        default =>
+            'background:#f3f4f6;color:#4b5563;',
+    };
+
+    $biogeographyDescription = match(
+        $fish->biogeography
+    ) {
+        'native' =>
+            'Spesies ini berasal secara alami dari wilayah persebarannya dan bukan hasil introduksi dari wilayah lain.',
+
+        'endemic' =>
+            'Spesies ini memiliki persebaran alami yang terbatas pada wilayah tertentu.',
+
+        'introduction' =>
+            'Spesies ini berasal dari wilayah lain dan masuk ke habitat tersebut melalui proses introduksi.',
+
+        default =>
+            'Informasi biogeografi ikan ini belum ditentukan.',
+    };
 @endphp
 
 <div class="container">
@@ -17,21 +79,32 @@
             <div class="card">
                 <div class="thumb">
                     @if($fish->image)
-                        <img src="{{ asset('storage/' . $fish->image) }}" alt="{{ $fish->name }}">
+                        <img
+                            src="{{ asset('storage/' . $fish->image) }}"
+                            alt="{{ $fish->name }}"
+                        >
                     @else
                         🐟
                     @endif
                 </div>
 
                 <div class="card-body">
-                    <h3 style="margin-bottom: 4px;">Informasi Singkat</h3>
+                    <h3 style="margin-bottom: 4px;">
+                        Informasi Singkat
+                    </h3>
 
-                    <div class="info-list" style="margin-top: 14px;">
+                    <div
+                        class="info-list"
+                        style="margin-top: 14px;"
+                    >
                         <div class="info-item">
                             <small>Nama Ilmiah</small>
+
                             <span>
                                 @if($fish->scientific_name)
-                                    <em>{{ $fish->scientific_name }}</em>
+                                    <em>
+                                        {{ $fish->scientific_name }}
+                                    </em>
                                 @else
                                     -
                                 @endif
@@ -40,8 +113,14 @@
 
                         <div class="info-item">
                             <small>Wilayah</small>
+
                             @if($fish->region)
-                                <a href="{{ route('regions.show', $fish->region->slug) }}">
+                                <a
+                                    href="{{ route(
+                                        'regions.show',
+                                        $fish->region->slug
+                                    ) }}"
+                                >
                                     {{ $fish->region->name }}
                                 </a>
                             @else
@@ -51,8 +130,14 @@
 
                         <div class="info-item">
                             <small>Kategori</small>
+
                             @if($fish->category)
-                                <a href="{{ route('categories.show', $fish->category->slug) }}">
+                                <a
+                                    href="{{ route(
+                                        'categories.show',
+                                        $fish->category->slug
+                                    ) }}"
+                                >
                                     {{ $fish->category->name }}
                                 </a>
                             @else
@@ -61,13 +146,41 @@
                         </div>
 
                         <div class="info-item">
+                            <small>Status Kelestarian</small>
+
+                            <span
+                                class="badge"
+                                style="{{ $conservationStyle }}"
+                            >
+                                {{ $fish->conservation_status_label }}
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <small>Biogeografi</small>
+
+                            <span
+                                class="badge"
+                                style="{{ $biogeographyStyle }}"
+                            >
+                                {{ $fish->biogeography_label }}
+                            </span>
+                        </div>
+
+                        <div class="info-item">
                             <small>Habitat</small>
-                            <span>{{ $fish->habitat ?: '-' }}</span>
+
+                            <span>
+                                {{ $fish->habitat ?: '-' }}
+                            </span>
                         </div>
 
                         <div class="info-item">
                             <small>Makanan</small>
-                            <span>{{ $fish->food ?: '-' }}</span>
+
+                            <span>
+                                {{ $fish->food ?: '-' }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -75,37 +188,102 @@
         </aside>
 
         <article class="content-box">
-            <div class="badge-row" style="margin-top: 0;">
-                <span class="badge">🐟 Detail Ikan</span>
+            <div
+                class="badge-row"
+                style="margin-top: 0;"
+            >
+                <span class="badge">
+                    🐟 Detail Ikan
+                </span>
 
                 @if($fish->region)
-                    <span class="badge">🗺️ {{ $fish->region->name }}</span>
+                    <span class="badge">
+                        🗺️ {{ $fish->region->name }}
+                    </span>
                 @endif
 
                 @if($fish->category)
-                    <span class="badge">🏷️ {{ $fish->category->name }}</span>
+                    <span class="badge">
+                        🏷️ {{ $fish->category->name }}
+                    </span>
                 @endif
+
+                <span
+                    class="badge"
+                    style="{{ $conservationStyle }}"
+                >
+                    🛡️ {{ $fish->conservation_status_label }}
+                </span>
+
+                <span
+                    class="badge"
+                    style="{{ $biogeographyStyle }}"
+                >
+                    🌍 {{ $fish->biogeography_label }}
+                </span>
             </div>
 
-            <h1 class="detail-title">{{ $fish->name }}</h1>
+            <h1 class="detail-title">
+                {{ $fish->name }}
+            </h1>
 
             @if($fish->scientific_name)
-                <div class="latin">{{ $fish->scientific_name }}</div>
+                <div class="latin">
+                    {{ $fish->scientific_name }}
+                </div>
             @endif
 
             <div class="article-section">
                 <h2>Deskripsi</h2>
 
                 <div>
-                    {!! $fish->description ?: '<p>Deskripsi belum tersedia.</p>' !!}
+                    {!! $fish->description
+                        ?: '<p>Deskripsi belum tersedia.</p>' !!}
                 </div>
+            </div>
+
+            <div class="article-section">
+                <h2>Status Kelestarian</h2>
+
+                <p>
+                    <span
+                        class="badge"
+                        style="{{ $conservationStyle }}"
+                    >
+                        {{ $fish->conservation_status_label }}
+                    </span>
+                </p>
+
+                <p>
+                    {{ $conservationDescription }}
+                </p>
+            </div>
+
+            <div class="article-section">
+                <h2>Biogeografi</h2>
+
+                <p>
+                    <span
+                        class="badge"
+                        style="{{ $biogeographyStyle }}"
+                    >
+                        {{ $fish->biogeography_label }}
+                    </span>
+                </p>
+
+                <p>
+                    {{ $biogeographyDescription }}
+                </p>
             </div>
 
             <div class="article-section">
                 <h2>Ciri-ciri</h2>
 
                 <p>
-                    {{ $fish->characteristics ?: 'Ciri-ciri belum tersedia.' }}
+                    {{
+                        $fish->characteristics
+                        ?: 'Ciri-ciri belum tersedia.'
+                    }}
                 </p>
             </div>
 
@@ -113,7 +291,10 @@
                 <h2>Habitat</h2>
 
                 <p>
-                    {{ $fish->habitat ?: 'Habitat belum tersedia.' }}
+                    {{
+                        $fish->habitat
+                        ?: 'Habitat belum tersedia.'
+                    }}
                 </p>
 
                 @if($habitatLocations->count())
@@ -123,7 +304,7 @@
                                 class="map-chip"
                                 href="https://www.google.com/maps/search/?api=1&query={{ urlencode($location) }}"
                                 target="_blank"
-                                rel="noopener"
+                                rel="noopener noreferrer"
                             >
                                 📍 {{ $location }}
                             </a>
@@ -136,19 +317,41 @@
                 <h2>Makanan</h2>
 
                 <p>
-                    {{ $fish->food ?: 'Informasi makanan belum tersedia.' }}
+                    {{
+                        $fish->food
+                        ?: 'Informasi makanan belum tersedia.'
+                    }}
                 </p>
             </div>
 
             @auth
-                @if(! (auth()->user()->is_admin || auth()->user()->hasRole('super_admin')))
+                @php
+                    $currentUser = auth()->user();
+
+                    $isAdmin = $currentUser->is_admin
+                        || $currentUser->hasRole('super_admin');
+                @endphp
+
+                @if(! $isAdmin)
                     <div class="article-section">
                         <h2>Ajukan Perubahan Data</h2>
+
                         <p>
-                            Menemukan informasi yang perlu diperbarui? Ajukan perubahan data agar dapat ditinjau oleh admin.
+                            Menemukan informasi yang perlu diperbarui?
+                            Tekan tombol berikut agar ikan ini langsung
+                            dipilih dan datanya dimasukkan ke formulir.
                         </p>
 
-                        <a href="{{ route('creature-requests.create') }}" class="btn">
+                        <a
+                            href="{{ route(
+                                'creature-requests.create',
+                                [
+                                    'request_type' => 'update',
+                                    'fish_id' => $fish->id,
+                                ]
+                            ) }}"
+                            class="btn"
+                        >
                             Ajukan Perubahan
                         </a>
                     </div>
@@ -160,17 +363,29 @@
     <div class="section-head">
         <div>
             <h2>Ikan Terkait</h2>
-            <p>Rekomendasi berdasarkan wilayah atau kategori yang sama.</p>
+
+            <p>
+                Rekomendasi berdasarkan wilayah atau kategori yang sama.
+            </p>
         </div>
 
-        <a href="{{ route('fishes.index') }}" class="btn secondary">Lihat Semua Ikan</a>
+        <a
+            href="{{ route('fishes.index') }}"
+            class="btn secondary"
+        >
+            Lihat Semua Ikan
+        </a>
     </div>
 
     <div class="grid grid-4">
         @forelse($relatedFishes as $relatedFish)
-            @include('partials.fish-card', ['fish' => $relatedFish])
+            @include('partials.fish-card', [
+                'fish' => $relatedFish,
+            ])
         @empty
-            <div class="empty">Belum ada ikan terkait.</div>
+            <div class="empty">
+                Belum ada ikan terkait.
+            </div>
         @endforelse
     </div>
 </div>

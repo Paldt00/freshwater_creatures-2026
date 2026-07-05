@@ -16,9 +16,9 @@ class FreshwaterDataSeeder extends Seeder
             ['id' => 1],
             [
                 'site_name' => 'Sistem Informasi Ikan Air Tawar',
-                'hero_title' => 'Ensiklopedia Digital Ikan Air Tawar Indonesia',
+                'hero_title' => 'Ensiklopedia Digital Ikan Air Tawar',
                 'hero_subtitle' => 'Temukan informasi ikan air tawar berdasarkan wilayah, kategori, habitat, makanan, ciri-ciri, dan nama ilmiah secara terstruktur.',
-                'contact_email' => 'admin@ikan.test',
+                'contact_email' => '',
                 'footer_text' => 'Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.',
             ]
         );

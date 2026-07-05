@@ -1,9 +1,63 @@
+@php
+    $layoutSetting = \App\Models\WebSetting::query()->first();
+
+    $authUser = auth()->user();
+
+    $isAdmin = $authUser instanceof \App\Models\User
+        && (
+            $authUser->is_admin
+            || $authUser->hasRole('super_admin')
+        );
+
+    $isHomeActive = request()->routeIs('home');
+
+    $isRegionActive = request()->routeIs(
+        'regions.*'
+    );
+
+    $isCategoryActive = request()->routeIs(
+        'categories.*'
+    );
+
+    $isFishActive = request()->routeIs(
+        'fishes.*'
+    );
+
+    $isRequestCreateActive = request()->routeIs(
+        'creature-requests.create'
+    );
+
+    $isRequestIndexActive = request()->routeIs(
+        'creature-requests.index'
+    );
+
+    $isLoginActive = request()->routeIs(
+        'public.login.form'
+    );
+
+    $isRegisterActive = request()->routeIs(
+        'public.register.form'
+    );
+
+    $isAdminActive = request()->is('admin*');
+
+    $siteName = $layoutSetting?->site_name
+        ?? 'Sistem Informasi Ikan Air Tawar';
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sistem Informasi Ikan Air Tawar')</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        @yield('title', $siteName)
+    </title>
 
     <style>
         :root {
@@ -20,8 +74,10 @@
             --text: #1f2937;
             --muted: #6b7280;
             --border: #e5e7eb;
-            --shadow: 0 18px 45px rgba(8, 32, 50, .12);
-            --shadow-sm: 0 10px 24px rgba(8, 32, 50, .08);
+            --shadow:
+                0 18px 45px rgba(8, 32, 50, .12);
+            --shadow-sm:
+                0 10px 24px rgba(8, 32, 50, .08);
             --radius: 22px;
         }
 
@@ -38,9 +94,21 @@
             font-family: Arial, Helvetica, sans-serif;
             color: var(--text);
             background:
-                radial-gradient(circle at top left, rgba(0, 180, 216, .12), transparent 32%),
-                linear-gradient(180deg, #f6fcff 0%, #eef8fd 100%);
+                radial-gradient(
+                    circle at top left,
+                    rgba(0, 180, 216, .12),
+                    transparent 32%
+                ),
+                linear-gradient(
+                    180deg,
+                    #f6fcff 0%,
+                    #eef8fd 100%
+                );
             line-height: 1.65;
+        }
+
+        body.menu-open {
+            overflow: hidden;
         }
 
         a {
@@ -53,12 +121,20 @@
             display: block;
         }
 
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
         .navbar {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, .92);
-            border-bottom: 1px solid rgba(229, 231, 235, .9);
+            background: rgba(255, 255, 255, .94);
+            border-bottom:
+                1px solid rgba(229, 231, 235, .9);
             backdrop-filter: blur(16px);
         }
 
@@ -68,7 +144,6 @@
             padding: 14px 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 18px;
         }
 
@@ -78,20 +153,27 @@
             gap: 12px;
             font-weight: 900;
             color: var(--navy);
-            min-width: fit-content;
+            flex-shrink: 0;
         }
 
         .brand-logo {
             width: 44px;
             height: 44px;
+            flex-shrink: 0;
             border-radius: 16px;
-            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--blue),
+                    var(--cyan)
+                );
             color: white;
             display: grid;
             place-items: center;
             font-size: 22px;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 180, 216, .25);
+            box-shadow:
+                0 10px 20px rgba(0, 180, 216, .25);
         }
 
         .brand-logo img {
@@ -100,11 +182,68 @@
             object-fit: cover;
         }
 
+        .brand-name {
+            max-width: 250px;
+            line-height: 1.25;
+        }
+
+        .nav-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            margin-left: auto;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: white;
+            color: var(--navy);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 5px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-toggle-line {
+            display: block;
+            width: 21px;
+            height: 2px;
+            border-radius: 999px;
+            background: currentColor;
+            transition: .2s ease;
+        }
+
+        .nav-toggle.active .nav-toggle-line:nth-child(1) {
+            transform:
+                translateY(7px)
+                rotate(45deg);
+        }
+
+        .nav-toggle.active .nav-toggle-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-toggle.active .nav-toggle-line:nth-child(3) {
+            transform:
+                translateY(-7px)
+                rotate(-45deg);
+        }
+
+        .nav-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+        }
+
         .nav-menu {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: flex-end;
+            gap: 6px;
             flex-wrap: wrap;
             color: var(--muted);
             font-weight: 800;
@@ -114,6 +253,7 @@
             padding: 9px 12px;
             border-radius: 999px;
             transition: .2s ease;
+            white-space: nowrap;
         }
 
         .nav-menu a:hover {
@@ -121,19 +261,43 @@
             background: var(--cyan-soft);
         }
 
+        .nav-menu a.active {
+            color: white;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--blue),
+                    var(--cyan)
+                );
+            box-shadow:
+                0 8px 18px rgba(15, 76, 117, .22);
+        }
+
+        .nav-menu a.active:hover {
+            color: white;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--blue),
+                    var(--cyan)
+                );
+        }
+
         .nav-menu form {
             margin: 0;
         }
 
         .nav-search {
+            width: 260px;
+            min-width: 230px;
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 260px;
         }
 
         .nav-search input {
             width: 100%;
+            min-width: 0;
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 11px 14px;
@@ -143,7 +307,8 @@
 
         .nav-search input:focus {
             border-color: var(--cyan);
-            box-shadow: 0 0 0 4px rgba(0, 180, 216, .12);
+            box-shadow:
+                0 0 0 4px rgba(0, 180, 216, .12);
         }
 
         .btn,
@@ -154,13 +319,19 @@
             padding: 11px 18px;
             cursor: pointer;
             font-weight: 900;
-            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--blue),
+                    var(--cyan)
+                );
             color: white;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 10px 22px rgba(15, 76, 117, .22);
+            box-shadow:
+                0 10px 22px rgba(15, 76, 117, .22);
             transition: .2s ease;
             white-space: nowrap;
         }
@@ -169,7 +340,8 @@
         .nav-search button:hover,
         .logout-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 14px 28px rgba(15, 76, 117, .28);
+            box-shadow:
+                0 14px 28px rgba(15, 76, 117, .28);
         }
 
         .btn.secondary {
@@ -200,8 +372,16 @@
             position: relative;
             overflow: hidden;
             background:
-                radial-gradient(circle at 85% 20%, rgba(0, 180, 216, .35), transparent 28%),
-                linear-gradient(135deg, rgba(8, 32, 50, .96), rgba(15, 76, 117, .92));
+                radial-gradient(
+                    circle at 85% 20%,
+                    rgba(0, 180, 216, .35),
+                    transparent 28%
+                ),
+                linear-gradient(
+                    135deg,
+                    rgba(8, 32, 50, .96),
+                    rgba(15, 76, 117, .92)
+                );
             color: white;
             border-radius: 34px;
             padding: 56px 42px;
@@ -250,7 +430,7 @@
         .hero p {
             max-width: 760px;
             margin: 0 0 28px;
-            color: rgba(255,255,255,.86);
+            color: rgba(255, 255, 255, .86);
             font-size: 18px;
         }
 
@@ -262,7 +442,8 @@
 
         .hero-panel {
             background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .18);
+            border:
+                1px solid rgba(255, 255, 255, .18);
             border-radius: 28px;
             padding: 24px;
             backdrop-filter: blur(16px);
@@ -276,7 +457,7 @@
         .hero-panel ul {
             margin: 0;
             padding-left: 20px;
-            color: rgba(255,255,255,.84);
+            color: rgba(255, 255, 255, .84);
         }
 
         .section-head {
@@ -305,15 +486,18 @@
         }
 
         .grid-2 {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
         }
 
         .grid-3 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
         }
 
         .grid-4 {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
         }
 
         .card {
@@ -350,8 +534,16 @@
             width: 100%;
             height: 200px;
             background:
-                radial-gradient(circle at 30% 20%, rgba(255, 255, 255, .65), transparent 25%),
-                linear-gradient(135deg, #caf0f8, #90e0ef);
+                radial-gradient(
+                    circle at 30% 20%,
+                    rgba(255, 255, 255, .65),
+                    transparent 25%
+                ),
+                linear-gradient(
+                    135deg,
+                    #caf0f8,
+                    #90e0ef
+                );
             display: grid;
             place-items: center;
             color: var(--blue);
@@ -405,7 +597,8 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
             gap: 16px;
             margin-top: 20px;
         }
@@ -432,7 +625,8 @@
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
             gap: 18px;
             margin-top: 22px;
         }
@@ -556,7 +750,8 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
             gap: 18px;
         }
 
@@ -595,7 +790,8 @@
         select:focus,
         textarea:focus {
             border-color: var(--cyan);
-            box-shadow: 0 0 0 4px rgba(0, 180, 216, .12);
+            box-shadow:
+                0 0 0 4px rgba(0, 180, 216, .12);
         }
 
         .error {
@@ -672,8 +868,16 @@
         .cta {
             margin-top: 50px;
             background:
-                radial-gradient(circle at 80% 10%, rgba(0, 180, 216, .22), transparent 25%),
-                linear-gradient(135deg, var(--navy), var(--blue));
+                radial-gradient(
+                    circle at 80% 10%,
+                    rgba(0, 180, 216, .22),
+                    transparent 25%
+                ),
+                linear-gradient(
+                    135deg,
+                    var(--navy),
+                    var(--blue)
+                );
             color: white;
             border-radius: 30px;
             padding: 34px;
@@ -690,13 +894,13 @@
 
         .cta p {
             margin: 0;
-            color: rgba(255,255,255,.82);
+            color: rgba(255, 255, 255, .82);
         }
 
         footer {
             margin-top: 60px;
             background: var(--navy);
-            color: rgba(255,255,255,.82);
+            color: rgba(255, 255, 255, .82);
             padding: 42px 20px;
         }
 
@@ -730,19 +934,75 @@
         .footer-bottom {
             margin-top: 28px;
             padding-top: 18px;
-            border-top: 1px solid rgba(255,255,255,.14);
-            color: rgba(255,255,255,.65);
+            border-top:
+                1px solid rgba(255, 255, 255, .14);
+            color: rgba(255, 255, 255, .65);
             font-size: 14px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1100px) {
+            body.menu-open {
+                overflow: hidden;
+            }
+
             .nav-inner {
-                align-items: flex-start;
                 flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .brand {
+                max-width: calc(100% - 60px);
+            }
+
+            .brand-name {
+                max-width: 420px;
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+            }
+
+            .nav-content {
+                display: none;
+                width: 100%;
+                flex: none;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 14px;
+                padding: 16px 0 4px;
+                border-top: 1px solid var(--border);
+            }
+
+            .nav-content.open {
+                display: flex;
+            }
+
+            .nav-menu {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+
+            .nav-menu a {
+                width: 100%;
+                padding: 11px 14px;
+                border-radius: 14px;
+            }
+
+            .nav-menu form {
+                width: 100%;
+            }
+
+            .logout-btn {
+                width: 100%;
+                border-radius: 14px;
+                padding: 11px 14px;
             }
 
             .nav-search {
                 width: 100%;
+                min-width: 0;
             }
 
             .hero-grid,
@@ -756,6 +1016,17 @@
         }
 
         @media (max-width: 780px) {
+            .nav-inner {
+                padding: 12px 14px;
+            }
+
+            .brand-name {
+                max-width: 230px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .container {
                 padding: 24px 14px;
             }
@@ -785,75 +1056,289 @@
                 flex-direction: column;
             }
 
-            .nav-menu {
-                justify-content: flex-start;
-            }
-
             .content-box,
             .form-card,
             .table-card {
                 padding: 20px;
             }
         }
-    </style>
-</head>
-<body>
-@php
-    $layoutSetting = \App\Models\WebSetting::query()->first();
-    $authUser = auth()->user();
-    $isAdmin = $authUser && ($authUser->is_admin || $authUser->hasRole('super_admin'));
-@endphp
 
+        @media (max-width: 520px) {
+            .brand-name {
+                max-width: 180px;
+                font-size: 14px;
+            }
+
+            .brand-logo,
+            .nav-toggle {
+                width: 42px;
+                height: 42px;
+            }
+
+            .nav-search {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .nav-search button {
+                width: 100%;
+            }
+
+            .hero {
+                padding: 32px 20px;
+            }
+
+            .hero h1 {
+                font-size: 30px;
+            }
+
+            .hero-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    @stack('styles')
+</head>
+
+<body>
 <nav class="navbar">
     <div class="nav-inner">
-        <a href="{{ route('home') }}" class="brand">
+        <a
+            href="{{ route('home') }}"
+            class="brand"
+            aria-label="Kembali ke beranda"
+        >
             <span class="brand-logo">
                 @if($layoutSetting?->logo)
-                    <img src="{{ asset('storage/' . $layoutSetting->logo) }}" alt="Logo">
+                    <img
+                        src="{{ asset(
+                            'storage/' . $layoutSetting->logo
+                        ) }}"
+                        alt="Logo {{ $siteName }}"
+                    >
                 @else
                     🐟
                 @endif
             </span>
-            <span>{{ $layoutSetting?->site_name ?? 'Sistem Informasi Ikan Air Tawar' }}</span>
+
+            <span class="brand-name">
+                {{ $siteName }}
+            </span>
         </a>
 
-        <div class="nav-menu">
-            <a href="{{ route('home') }}">Beranda</a>
-            <a href="{{ route('regions.index') }}">Wilayah</a>
-            <a href="{{ route('categories.index') }}">Kategori</a>
-            <a href="{{ route('fishes.index') }}">Ikan</a>
+        <button
+            type="button"
+            class="nav-toggle"
+            id="navToggle"
+            aria-label="Buka menu navigasi"
+            aria-controls="navContent"
+            aria-expanded="false"
+        >
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+        </button>
 
-            @auth
-                @if(! $isAdmin)
-                    <a href="{{ route('creature-requests.create') }}">Ajukan Data</a>
-                    <a href="{{ route('creature-requests.index') }}">Request Saya</a>
-                @endif
+        <div
+            class="nav-content"
+            id="navContent"
+        >
+            <div class="nav-menu">
+                <a
+                    href="{{ route('home') }}"
+                    class="{{ $isHomeActive ? 'active' : '' }}"
+                    @if($isHomeActive)
+                        aria-current="page"
+                    @endif
+                >
+                    Beranda
+                </a>
 
-                @if($isAdmin)
-                    <a href="/admin">Admin</a>
-                @endif
+                <a
+                    href="{{ route('regions.index') }}"
+                    class="{{ $isRegionActive ? 'active' : '' }}"
+                    @if($isRegionActive)
+                        aria-current="page"
+                    @endif
+                >
+                    Wilayah
+                </a>
 
-                <form action="{{ route('public.logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
-            @else
-                <a href="{{ route('public.login.form') }}">Login</a>
-                <a href="{{ route('public.register.form') }}">Register</a>
-            @endauth
+                <a
+                    href="{{ route('categories.index') }}"
+                    class="{{ $isCategoryActive ? 'active' : '' }}"
+                    @if($isCategoryActive)
+                        aria-current="page"
+                    @endif
+                >
+                    Kategori
+                </a>
+
+                <a
+                    href="{{ route('fishes.index') }}"
+                    class="{{ $isFishActive ? 'active' : '' }}"
+                    @if($isFishActive)
+                        aria-current="page"
+                    @endif
+                >
+                    Ikan
+                </a>
+
+                @auth
+                    @if(! $isAdmin)
+                        <a
+                            href="{{
+                                route(
+                                    'creature-requests.create'
+                                )
+                            }}"
+                            class="{{
+                                $isRequestCreateActive
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            @if($isRequestCreateActive)
+                                aria-current="page"
+                            @endif
+                        >
+                            Ajukan Data
+                        </a>
+
+                        <a
+                            href="{{
+                                route(
+                                    'creature-requests.index'
+                                )
+                            }}"
+                            class="{{
+                                $isRequestIndexActive
+                                    ? 'active'
+                                    : ''
+                            }}"
+                            @if($isRequestIndexActive)
+                                aria-current="page"
+                            @endif
+                        >
+                            Pengajuan Saya
+                        </a>
+                    @endif
+
+                    @if($isAdmin)
+                        <a
+                            href="{{ url('/admin') }}"
+                            class="{{
+                                $isAdminActive
+                                    ? 'active'
+                                    : ''
+                            }}"
+                        >
+                            Dashboard Admin
+                        </a>
+                    @endif
+
+                    <form
+                        action="{{
+                            route('public.logout')
+                        }}"
+                        method="POST"
+                    >
+                        @csrf
+
+                        <button
+                            type="submit"
+                            class="logout-btn"
+                        >
+                            Keluar
+                        </button>
+                    </form>
+                @else
+                    <a
+                        href="{{
+                            route(
+                                'public.login.form'
+                            )
+                        }}"
+                        class="{{
+                            $isLoginActive
+                                ? 'active'
+                                : ''
+                        }}"
+                        @if($isLoginActive)
+                            aria-current="page"
+                        @endif
+                    >
+                        Masuk
+                    </a>
+
+                    <a
+                        href="{{
+                            route(
+                                'public.register.form'
+                            )
+                        }}"
+                        class="{{
+                            $isRegisterActive
+                                ? 'active'
+                                : ''
+                        }}"
+                        @if($isRegisterActive)
+                            aria-current="page"
+                        @endif
+                    >
+                        Daftar
+                    </a>
+                @endauth
+            </div>
+
+            <form
+                action="{{ route('search') }}"
+                method="GET"
+                class="nav-search"
+                role="search"
+            >
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ request('q') }}"
+                    placeholder="Cari ikan, habitat, wilayah..."
+                    aria-label="Kata kunci pencarian"
+                >
+
+                <button type="submit">
+                    Cari
+                </button>
+            </form>
         </div>
-
-        <form action="{{ route('search') }}" method="GET" class="nav-search">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari ikan, habitat, wilayah...">
-            <button type="submit">Cari</button>
-        </form>
     </div>
 </nav>
 
 <main>
     @if(session('success'))
-        <div class="container" style="padding-bottom: 0;">
-            <div class="alert success">{{ session('success') }}</div>
+        <div
+            class="container"
+            style="padding-bottom: 0;"
+        >
+            <div
+                class="alert success"
+                role="alert"
+            >
+                {{ session('success') }}
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div
+            class="container"
+            style="padding-bottom: 0;"
+        >
+            <div
+                class="alert danger"
+                role="alert"
+            >
+                {{ session('error') }}
+            </div>
         </div>
     @endif
 
@@ -864,46 +1349,198 @@
     <div class="footer-inner">
         <div class="footer-grid">
             <div>
-                <span class="footer-title">{{ $layoutSetting?->site_name ?? 'Sistem Informasi Ikan Air Tawar' }}</span>
+                <span class="footer-title">
+                    {{ $siteName }}
+                </span>
+
                 <p>
-                    {{ $layoutSetting?->footer_text ?? 'Website informasi ikan air tawar berbasis Laravel dan Filament untuk mendukung dokumentasi, edukasi, serta pengelolaan data secara terstruktur.' }}
+                    {{
+                        $layoutSetting?->footer_text
+                        ?? 'Website informasi ikan air tawar berbasis Laravel dan Filament untuk mendukung dokumentasi, edukasi, serta pengelolaan data secara terstruktur.'
+                    }}
                 </p>
             </div>
 
             <div>
-                <span class="footer-title">Navigasi</span>
+                <span class="footer-title">
+                    Navigasi
+                </span>
+
                 <div class="footer-links">
-                    <a href="{{ route('home') }}">Beranda</a>
-                    <a href="{{ route('regions.index') }}">Wilayah</a>
-                    <a href="{{ route('categories.index') }}">Kategori</a>
-                    <a href="{{ route('fishes.index') }}">Daftar Ikan</a>
+                    <a href="{{ route('home') }}">
+                        Beranda
+                    </a>
+
+                    <a href="{{ route('regions.index') }}">
+                        Wilayah
+                    </a>
+
+                    <a href="{{ route('categories.index') }}">
+                        Kategori
+                    </a>
+
+                    <a href="{{ route('fishes.index') }}">
+                        Daftar Ikan
+                    </a>
+
+                    @auth
+                        @if(! $isAdmin)
+                            <a
+                                href="{{
+                                    route(
+                                        'creature-requests.index'
+                                    )
+                                }}"
+                            >
+                                Pengajuan Saya
+                            </a>
+                        @endif
+                    @endauth
                 </div>
             </div>
 
             <div>
-                <span class="footer-title">Kontak</span>
+                <span class="footer-title">
+                    Kontak
+                </span>
+
                 <div class="footer-links">
                     @if($layoutSetting?->contact_email)
-                        <span>Email: {{ $layoutSetting->contact_email }}</span>
+                        <a
+                            href="mailto:{{
+                                $layoutSetting->contact_email
+                            }}"
+                        >
+                            Email:
+                            {{ $layoutSetting->contact_email }}
+                        </a>
                     @else
-                        <span>Email: admin@ikan.test</span>
+                        <span>
+                            Email: admin@ikan.test
+                        </span>
                     @endif
 
                     @if($layoutSetting?->contact_phone)
-                        <span>Telepon: {{ $layoutSetting->contact_phone }}</span>
+                        <a
+                            href="tel:{{
+                                preg_replace(
+                                    '/[^0-9+]/',
+                                    '',
+                                    $layoutSetting->contact_phone
+                                )
+                            }}"
+                        >
+                            Telepon:
+                            {{ $layoutSetting->contact_phone }}
+                        </a>
                     @endif
 
                     @if($layoutSetting?->address)
-                        <span>{{ $layoutSetting->address }}</span>
+                        <span>
+                            {{ $layoutSetting->address }}
+                        </span>
                     @endif
                 </div>
             </div>
         </div>
 
         <div class="footer-bottom">
-            © {{ date('Y') }} {{ $layoutSetting?->site_name ?? 'Sistem Informasi Ikan Air Tawar' }}. All rights reserved.
+            © {{ date('Y') }} {{ $siteName }}.
+            Hak cipta dilindungi.
         </div>
     </div>
 </footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navToggle =
+            document.getElementById('navToggle');
+
+        const navContent =
+            document.getElementById('navContent');
+
+        if (!navToggle || !navContent) {
+            return;
+        }
+
+        function openNavigation() {
+            navToggle.classList.add('active');
+            navContent.classList.add('open');
+            document.body.classList.add('menu-open');
+
+            navToggle.setAttribute(
+                'aria-expanded',
+                'true'
+            );
+
+            navToggle.setAttribute(
+                'aria-label',
+                'Tutup menu navigasi'
+            );
+        }
+
+        function closeNavigation() {
+            navToggle.classList.remove('active');
+            navContent.classList.remove('open');
+            document.body.classList.remove('menu-open');
+
+            navToggle.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+            navToggle.setAttribute(
+                'aria-label',
+                'Buka menu navigasi'
+            );
+        }
+
+        navToggle.addEventListener(
+            'click',
+            function () {
+                const isOpen =
+                    navContent.classList.contains(
+                        'open'
+                    );
+
+                if (isOpen) {
+                    closeNavigation();
+                    return;
+                }
+
+                openNavigation();
+            }
+        );
+
+        navContent
+            .querySelectorAll('a')
+            .forEach(function (link) {
+                link.addEventListener(
+                    'click',
+                    closeNavigation
+                );
+            });
+
+        document.addEventListener(
+            'keydown',
+            function (event) {
+                if (event.key === 'Escape') {
+                    closeNavigation();
+                }
+            }
+        );
+
+        window.addEventListener(
+            'resize',
+            function () {
+                if (window.innerWidth > 1100) {
+                    closeNavigation();
+                }
+            }
+        );
+    });
+</script>
+
+@stack('scripts')
 </body>
 </html>

@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 
 class PublicAuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
             return $this->redirectAfterLogin();
@@ -18,16 +20,24 @@ class PublicAuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'email' => [
+                'required',
+                'email',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+            ],
         ]);
 
-        $remember = $request->boolean('remember');
-
-        if (! Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt(
+            $credentials,
+            $request->boolean('remember')
+        )) {
             return back()
                 ->withErrors([
                     'email' => 'Email atau kata sandi tidak sesuai.',
@@ -37,10 +47,10 @@ class PublicAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->redirectAfterLogin();
+        return $this->redirectAfterLogin('Berhasil Login');
     }
 
-    public function showRegister()
+    public function showRegister(): View|RedirectResponse
     {
         if (Auth::check()) {
             return $this->redirectAfterLogin();
@@ -49,12 +59,28 @@ class PublicAuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
         ]);
 
         $user = User::create([
@@ -64,9 +90,7 @@ class PublicAuthController extends Controller
             'is_admin' => false,
         ]);
 
-        if (method_exists($user, 'assignRole')) {
-            $user->assignRole('user');
-        }
+        $user->assignRole('user');
 
         Auth::login($user);
 
@@ -74,10 +98,10 @@ class PublicAuthController extends Controller
 
         return redirect()
             ->route('home')
-            ->with('success', 'Registrasi berhasil. Akun sudah masuk ke sistem.');
+            ->with('success', 'Berhasil Registrasi');
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
 
@@ -86,17 +110,27 @@ class PublicAuthController extends Controller
 
         return redirect()
             ->route('home')
-            ->with('success', 'Berhasil keluar dari sistem.');
+            ->with('success', 'Berhasil Logout');
     }
 
-    private function redirectAfterLogin()
-    {
+    private function redirectAfterLogin(
+        ?string $message = null
+    ): RedirectResponse {
         $user = Auth::user();
 
-        if ($user && ($user->is_admin || $user->hasRole('super_admin'))) {
-            return redirect('/admin');
+        if (
+            $user instanceof User
+            && ($user->is_admin || $user->hasRole('super_admin'))
+        ) {
+            $redirect = redirect('/admin');
+        } else {
+            $redirect = redirect()->route('home');
         }
 
-        return redirect()->route('home');
+        if ($message !== null) {
+            $redirect->with('success', $message);
+        }
+
+        return $redirect;
     }
 }

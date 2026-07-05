@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CreatureRequest extends Model
 {
+    public const REQUEST_TYPES = [
+        'add' => 'Tambah Data',
+        'update' => 'Perubahan Data',
+    ];
+
+    public const REQUEST_STATUSES = [
+        'pending' => 'Menunggu Pemeriksaan',
+        'approved' => 'Disetujui',
+        'rejected' => 'Ditolak',
+    ];
+
     protected $fillable = [
         'user_id',
         'fish_id',
@@ -19,6 +30,8 @@ class CreatureRequest extends Model
         'image',
         'habitat',
         'food',
+        'conservation_status',
+        'biogeography',
         'characteristics',
         'description',
         'request_note',
@@ -32,6 +45,30 @@ class CreatureRequest extends Model
         return [
             'reviewed_at' => 'datetime',
         ];
+    }
+
+    public function getRequestTypeLabelAttribute(): string
+    {
+        return self::REQUEST_TYPES[$this->request_type]
+            ?? 'Tidak Diketahui';
+    }
+
+    public function getRequestStatusLabelAttribute(): string
+    {
+        return self::REQUEST_STATUSES[$this->request_status]
+            ?? 'Tidak Diketahui';
+    }
+
+    public function getConservationStatusLabelAttribute(): string
+    {
+        return Fish::CONSERVATION_STATUSES[$this->conservation_status]
+            ?? 'Belum Ditentukan';
+    }
+
+    public function getBiogeographyLabelAttribute(): string
+    {
+        return Fish::BIOGEOGRAPHY_TYPES[$this->biogeography]
+            ?? 'Belum Ditentukan';
     }
 
     public function user(): BelongsTo

@@ -11,6 +11,18 @@ class Fish extends Model
 {
     protected $table = 'fishes';
 
+    public const CONSERVATION_STATUSES = [
+        'extinct' => 'Extinct (Punah)',
+        'endangered' => 'Endangered (Terancam Punah)',
+        'least_concern' => 'Least Concern (Risiko Rendah)',
+    ];
+
+    public const BIOGEOGRAPHY_TYPES = [
+        'native' => 'Native (Spesies Asli)',
+        'endemic' => 'Endemic (Spesies Endemik)',
+        'introduction' => 'Introduction (Spesies Pendatang)',
+    ];
+
     protected $fillable = [
         'region_id',
         'category_id',
@@ -20,6 +32,8 @@ class Fish extends Model
         'image',
         'habitat',
         'food',
+        'conservation_status',
+        'biogeography',
         'characteristics',
         'description',
         'is_featured',
@@ -44,16 +58,26 @@ class Fish extends Model
         });
     }
 
-    public static function makeUniqueSlug(string $value, ?int $ignoreId = null): string
-    {
+    public static function makeUniqueSlug(
+        string $value,
+        ?int $ignoreId = null
+    ): string {
         $baseSlug = Str::slug($value);
+
+        if ($baseSlug === '') {
+            $baseSlug = 'ikan';
+        }
+
         $slug = $baseSlug;
         $counter = 2;
 
         while (
             static::query()
                 ->where('slug', $slug)
-                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->when(
+                    $ignoreId,
+                    fn (Builder $query) => $query->where('id', '!=', $ignoreId)
+                )
                 ->exists()
         ) {
             $slug = $baseSlug . '-' . $counter;
@@ -66,6 +90,18 @@ class Fish extends Model
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('is_published', true);
+    }
+
+    public function getConservationStatusLabelAttribute(): string
+    {
+        return self::CONSERVATION_STATUSES[$this->conservation_status]
+            ?? 'Belum Ditentukan';
+    }
+
+    public function getBiogeographyLabelAttribute(): string
+    {
+        return self::BIOGEOGRAPHY_TYPES[$this->biogeography]
+            ?? 'Belum Ditentukan';
     }
 
     public function region(): BelongsTo
