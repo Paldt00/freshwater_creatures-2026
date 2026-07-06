@@ -13,7 +13,7 @@
 
             @if($errors->any())
                 <div class="alert danger">
-                    Data login belum sesuai. Silakan periksa kembali.
+                    {{ $errors->first() }}
                 </div>
             @endif
 

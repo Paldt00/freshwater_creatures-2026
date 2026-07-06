@@ -13,122 +13,214 @@ class PublicAuthController extends Controller
 {
     public function showLogin(): View|RedirectResponse
     {
-        if (Auth::check()) {
+        if (Auth::guard('web')->check()) {
             return $this->redirectAfterLogin();
         }
 
         return view('auth.login');
     }
 
-    public function login(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => [
-                'required',
+    public function login(
+        Request $request
+    ): RedirectResponse {
+        $credentials = $request->validate(
+            [
+                'email' => [
+                    'required',
+                    'email',
+                ],
+
+                'password' => [
+                    'required',
+                    'string',
+                ],
+            ],
+            [
+                'email.required' =>
+                    'Email wajib diisi.',
+
+                'email.email' =>
+                    'Format email tidak valid.',
+
+                'password.required' =>
+                    'Kata sandi wajib diisi.',
+            ]
+        );
+
+        $user = User::query()
+            ->where(
                 'email',
-            ],
+                $credentials['email']
+            )
+            ->first();
 
-            'password' => [
-                'required',
-                'string',
-            ],
-        ]);
-
-        if (! Auth::attempt(
-            $credentials,
-            $request->boolean('remember')
-        )) {
+        if (! $user) {
             return back()
                 ->withErrors([
-                    'email' => 'Email atau kata sandi tidak sesuai.',
+                    'email' =>
+                        'Akun belum terdaftar. Silakan daftar terlebih dahulu.',
                 ])
                 ->onlyInput('email');
         }
 
+        $loginSuccessful = Auth::guard('web')
+            ->attempt(
+                $credentials,
+                $request->boolean('remember')
+            );
+
+        if (! $loginSuccessful) {
+            return back()
+                ->withErrors([
+                    'password' =>
+                        'Kata sandi tidak sesuai.',
+                ])
+                ->onlyInput('email');
+        }
+
+        /*
+         * Regenerasi ID session tanpa menghapus
+         * session guard admin.
+         */
         $request->session()->regenerate();
 
-        return $this->redirectAfterLogin('Berhasil Login');
+        return $this->redirectAfterLogin(
+            'Berhasil Login'
+        );
     }
 
-    public function showRegister(): View|RedirectResponse
-    {
-        if (Auth::check()) {
+    public function showRegister():
+        View|RedirectResponse {
+        if (Auth::guard('web')->check()) {
             return $this->redirectAfterLogin();
         }
 
         return view('auth.register');
     }
 
-    public function register(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+    public function register(
+        Request $request
+    ): RedirectResponse {
+        $data = $request->validate(
+            [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                ],
 
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'unique:users,email',
-            ],
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    'unique:users,email',
+                ],
 
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                ],
             ],
-        ]);
+            [
+                'name.required' =>
+                    'Nama wajib diisi.',
 
-        $user = User::create([
+                'name.max' =>
+                    'Nama maksimal 255 karakter.',
+
+                'email.required' =>
+                    'Email wajib diisi.',
+
+                'email.email' =>
+                    'Format email tidak valid.',
+
+                'email.max' =>
+                    'Email maksimal 255 karakter.',
+
+                'email.unique' =>
+                    'Email sudah terdaftar.',
+
+                'password.required' =>
+                    'Kata sandi wajib diisi.',
+
+                'password.min' =>
+                    'Kata sandi minimal 8 karakter.',
+
+                'password.confirmed' =>
+                    'Konfirmasi kata sandi tidak sesuai.',
+            ]
+        );
+
+        $user = User::query()->create([
             'name' => $data['name'],
+
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+
+            'password' => Hash::make(
+                $data['password']
+            ),
+
             'is_admin' => false,
         ]);
 
         $user->assignRole('user');
 
-        Auth::login($user);
+        Auth::guard('web')->login($user);
 
+        /*
+         * Regenerasi ID session tanpa menghapus
+         * session guard admin.
+         */
         $request->session()->regenerate();
 
         return redirect()
             ->route('home')
-            ->with('success', 'Berhasil Registrasi');
+            ->with(
+                'success',
+                'Berhasil Registrasi'
+            );
     }
 
-    public function logout(Request $request): RedirectResponse
-    {
-        Auth::logout();
+    public function logout(
+        Request $request
+    ): RedirectResponse {
+        /*
+         * Hanya logout guard web.
+         * Jangan memakai session()->invalidate(),
+         * karena dapat menghapus login guard admin.
+         */
+        Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()
             ->route('home')
-            ->with('success', 'Berhasil Logout');
+            ->with(
+                'success',
+                'Berhasil Logout'
+            );
     }
 
     private function redirectAfterLogin(
         ?string $message = null
     ): RedirectResponse {
-        $user = Auth::user();
-
-        if (
-            $user instanceof User
-            && ($user->is_admin || $user->hasRole('super_admin'))
-        ) {
-            $redirect = redirect('/admin');
-        } else {
-            $redirect = redirect()->route('home');
-        }
+        /*
+         * Login melalui halaman publik tetap diarahkan
+         * ke website publik.
+         *
+         * Login admin dilakukan secara terpisah melalui:
+         * /admin/login
+         */
+        $redirect = redirect()
+            ->route('home');
 
         if ($message !== null) {
-            $redirect->with('success', $message);
+            $redirect->with(
+                'success',
+                $message
+            );
         }
 
         return $redirect;

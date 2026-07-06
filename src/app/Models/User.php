@@ -15,6 +15,11 @@ class User extends Authenticatable implements FilamentUser
     use Notifiable;
     use HasRoles;
 
+    /**
+     * Role Spatie tetap menggunakan guard web.
+     */
+    protected string $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
@@ -38,6 +43,11 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_admin || $this->hasRole('super_admin');
+        if ($panel->getId() !== 'admin') {
+            return false;
+        }
+
+        return (bool) $this->is_admin
+            || $this->hasRole('super_admin');
     }
 }

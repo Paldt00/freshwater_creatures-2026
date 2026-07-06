@@ -9,33 +9,148 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+/*
+|--------------------------------------------------------------------------
+| Halaman Publik
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/wilayah', [RegionController::class, 'index'])->name('regions.index');
-Route::get('/wilayah/{region:slug}', [RegionController::class, 'show'])->name('regions.show');
+Route::get(
+    '/',
+    [HomeController::class, 'index']
+)->name('home');
 
-Route::get('/kategori', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('/kategori/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+/*
+|--------------------------------------------------------------------------
+| Wilayah
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/ikan', [FishController::class, 'index'])->name('fishes.index');
-Route::get('/ikan/{fish:slug}', [FishController::class, 'show'])->name('fishes.show');
+Route::get(
+    '/wilayah',
+    [RegionController::class, 'index']
+)->name('regions.index');
 
-Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get(
+    '/wilayah/{region:slug}',
+    [RegionController::class, 'show']
+)->name('regions.show');
 
-Route::get('/login', [PublicAuthController::class, 'showLogin'])->name('public.login.form');
-Route::post('/login', [PublicAuthController::class, 'login'])->name('public.login');
+/*
+|--------------------------------------------------------------------------
+| Kategori
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/register', [PublicAuthController::class, 'showRegister'])->name('public.register.form');
-Route::post('/register', [PublicAuthController::class, 'register'])->name('public.register');
+Route::get(
+    '/kategori',
+    [CategoryController::class, 'index']
+)->name('categories.index');
 
-Route::post('/logout', [PublicAuthController::class, 'logout'])->name('public.logout');
+Route::get(
+    '/kategori/{category:slug}',
+    [CategoryController::class, 'show']
+)->name('categories.show');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/requests', [CreatureRequestController::class, 'index'])->name('creature-requests.index');
-    Route::get('/request/create', [CreatureRequestController::class, 'create'])->name('creature-requests.create');
-    Route::get('/request/fish-data/{fish:id}', [CreatureRequestController::class, 'fishData'])->name('creature-requests.fish-data');
-    Route::post('/request', [CreatureRequestController::class, 'store'])->name('creature-requests.store');
+/*
+|--------------------------------------------------------------------------
+| Ikan
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/ikan',
+    [FishController::class, 'index']
+)->name('fishes.index');
+
+Route::get(
+    '/ikan/{fish:slug}',
+    [FishController::class, 'show']
+)->name('fishes.show');
+
+/*
+|--------------------------------------------------------------------------
+| Pencarian
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/search',
+    [SearchController::class, 'index']
+)->name('search');
+
+/*
+|--------------------------------------------------------------------------
+| Autentikasi Publik
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/login',
+    [PublicAuthController::class, 'showLogin']
+)->name('public.login.form');
+
+Route::post(
+    '/login',
+    [PublicAuthController::class, 'login']
+)->name('public.login');
+
+Route::get(
+    '/register',
+    [PublicAuthController::class, 'showRegister']
+)->name('public.register.form');
+
+Route::post(
+    '/register',
+    [PublicAuthController::class, 'register']
+)->name('public.register');
+
+/*
+|--------------------------------------------------------------------------
+| Route yang Wajib Login
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function (): void {
+    Route::post(
+        '/logout',
+        [PublicAuthController::class, 'logout']
+    )->name('public.logout');
+
+    Route::get(
+        '/requests',
+        [CreatureRequestController::class, 'index']
+    )->name('creature-requests.index');
+
+    Route::get(
+        '/request/create',
+        [CreatureRequestController::class, 'create']
+    )->name('creature-requests.create');
+
+    Route::get(
+        '/request/fish-data/{fish:id}',
+        [CreatureRequestController::class, 'fishData']
+    )->name('creature-requests.fish-data');
+
+    Route::post(
+        '/request',
+        [CreatureRequestController::class, 'store']
+    )->name('creature-requests.store');
 });
 
-Route::get('/region/{region:slug}', [RegionController::class, 'show'])->name('regions.show.legacy');
-Route::get('/fish/{fish:slug}', [FishController::class, 'show'])->name('fishes.show.legacy');
+/*
+|--------------------------------------------------------------------------
+| URL Lama
+|--------------------------------------------------------------------------
+| Dipertahankan agar tautan lama tetap dapat digunakan.
+*/
+
+Route::get(
+    '/region/{region:slug}',
+    [RegionController::class, 'show']
+)->name('regions.show.legacy');
+
+Route::get(
+    '/fish/{fish:slug}',
+    [FishController::class, 'show']
+)->name('fishes.show.legacy');
