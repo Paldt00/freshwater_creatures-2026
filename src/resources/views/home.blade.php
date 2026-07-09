@@ -357,11 +357,11 @@
         <section class="cta">
             <div>
                 <h2>
-                    Punya informasi ikan air tawar?
+                    Punya informasi ikan air tawar lainnya?
                 </h2>
 
                 <p>
-                    Pengguna terdaftar dapat mengajukan penambahan atau perubahan data, lalu administrator akan melakukan verifikasi.
+                    Pengguna terdaftar dapat mengajukan penambahan atau perubahan data yang selanjutnya akan melalui proses pemeriksaan dan verifikasi.
                 </p>
             </div>
 
@@ -377,11 +377,11 @@
             <section class="cta">
                 <div>
                     <h2>
-                        Punya informasi ikan air tawar?
+                        Punya informasi ikan air tawar lainnya?
                     </h2>
 
                     <p>
-                        Ajukan penambahan atau perubahan data ikan agar dapat diperiksa dan diverifikasi oleh administrator.
+                        Ajukan penambahan atau perubahan data ikan agar dapat diperiksa dan diverifikasi sebelum dipublikasikan.
                     </p>
                 </div>
 

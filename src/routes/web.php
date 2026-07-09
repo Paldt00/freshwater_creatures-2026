@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Halaman Publik
+| Beranda
 |--------------------------------------------------------------------------
 */
 
@@ -75,9 +75,25 @@ Route::get(
 */
 
 Route::get(
+    '/search/suggestions',
+    [SearchController::class, 'suggestions']
+)->name('search.suggestions');
+
+Route::get(
     '/search',
     [SearchController::class, 'index']
 )->name('search');
+
+/*
+|--------------------------------------------------------------------------
+| Pembaruan Token CSRF
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/csrf-token',
+    [PublicAuthController::class, 'refreshCsrfToken']
+)->name('csrf.refresh');
 
 /*
 |--------------------------------------------------------------------------
@@ -111,38 +127,62 @@ Route::post(
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function (): void {
-    Route::post(
-        '/logout',
-        [PublicAuthController::class, 'logout']
-    )->name('public.logout');
+Route::middleware('auth')->group(
+    function (): void {
+        Route::post(
+            '/logout',
+            [
+                PublicAuthController::class,
+                'logout',
+            ]
+        )->name('public.logout');
 
-    Route::get(
-        '/requests',
-        [CreatureRequestController::class, 'index']
-    )->name('creature-requests.index');
+        Route::get(
+            '/requests',
+            [
+                CreatureRequestController::class,
+                'index',
+            ]
+        )->name(
+            'creature-requests.index'
+        );
 
-    Route::get(
-        '/request/create',
-        [CreatureRequestController::class, 'create']
-    )->name('creature-requests.create');
+        Route::get(
+            '/request/create',
+            [
+                CreatureRequestController::class,
+                'create',
+            ]
+        )->name(
+            'creature-requests.create'
+        );
 
-    Route::get(
-        '/request/fish-data/{fish:id}',
-        [CreatureRequestController::class, 'fishData']
-    )->name('creature-requests.fish-data');
+        Route::get(
+            '/request/fish-data/{fish:id}',
+            [
+                CreatureRequestController::class,
+                'fishData',
+            ]
+        )->name(
+            'creature-requests.fish-data'
+        );
 
-    Route::post(
-        '/request',
-        [CreatureRequestController::class, 'store']
-    )->name('creature-requests.store');
-});
+        Route::post(
+            '/request',
+            [
+                CreatureRequestController::class,
+                'store',
+            ]
+        )->name(
+            'creature-requests.store'
+        );
+    }
+);
 
 /*
 |--------------------------------------------------------------------------
 | URL Lama
 |--------------------------------------------------------------------------
-| Dipertahankan agar tautan lama tetap dapat digunakan.
 */
 
 Route::get(

@@ -1,13 +1,18 @@
 @php
     $layoutSetting = \App\Models\WebSetting::query()->first();
 
-    $authUser = auth()->user();
+    $authUser = auth()
+        ->guard('web')
+        ->user();
 
     $isAdmin = $authUser instanceof \App\Models\User
         && (
             $authUser->is_admin
             || $authUser->hasRole('super_admin')
         );
+
+    $siteName = $layoutSetting?->site_name
+        ?? 'Sistem Informasi Ikan Air Tawar';
 
     $isHomeActive = request()->routeIs('home');
 
@@ -38,11 +43,6 @@
     $isRegisterActive = request()->routeIs(
         'public.register.form'
     );
-
-    $isAdminActive = request()->is('admin*');
-
-    $siteName = $layoutSetting?->site_name
-        ?? 'Sistem Informasi Ikan Air Tawar';
 @endphp
 
 <!DOCTYPE html>
@@ -53,6 +53,11 @@
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
     >
 
     <title>
@@ -214,17 +219,20 @@
             transition: .2s ease;
         }
 
-        .nav-toggle.active .nav-toggle-line:nth-child(1) {
+        .nav-toggle.active
+        .nav-toggle-line:nth-child(1) {
             transform:
                 translateY(7px)
                 rotate(45deg);
         }
 
-        .nav-toggle.active .nav-toggle-line:nth-child(2) {
+        .nav-toggle.active
+        .nav-toggle-line:nth-child(2) {
             opacity: 0;
         }
 
-        .nav-toggle.active .nav-toggle-line:nth-child(3) {
+        .nav-toggle.active
+        .nav-toggle-line:nth-child(3) {
             transform:
                 translateY(-7px)
                 rotate(-45deg);
@@ -271,16 +279,6 @@
                 );
             box-shadow:
                 0 8px 18px rgba(15, 76, 117, .22);
-        }
-
-        .nav-menu a.active:hover {
-            color: white;
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--blue),
-                    var(--cyan)
-                );
         }
 
         .nav-menu form {
@@ -941,10 +939,6 @@
         }
 
         @media (max-width: 1100px) {
-            body.menu-open {
-                overflow: hidden;
-            }
-
             .nav-inner {
                 flex-wrap: wrap;
                 gap: 12px;
@@ -991,6 +985,10 @@
             }
 
             .nav-menu form {
+                width: 100%;
+            }
+
+            .logout-confirmation-wrapper {
                 width: 100%;
             }
 
@@ -1112,9 +1110,12 @@
             <span class="brand-logo">
                 @if($layoutSetting?->logo)
                     <img
-                        src="{{ asset(
-                            'storage/' . $layoutSetting->logo
-                        ) }}"
+                        src="{{
+                            asset(
+                                'storage/'
+                                . $layoutSetting->logo
+                            )
+                        }}"
                         alt="Logo {{ $siteName }}"
                     >
                 @else
@@ -1147,45 +1148,49 @@
             <div class="nav-menu">
                 <a
                     href="{{ route('home') }}"
-                    class="{{ $isHomeActive ? 'active' : '' }}"
-                    @if($isHomeActive)
-                        aria-current="page"
-                    @endif
+                    class="{{
+                        $isHomeActive
+                            ? 'active'
+                            : ''
+                    }}"
                 >
                     Beranda
                 </a>
 
                 <a
                     href="{{ route('regions.index') }}"
-                    class="{{ $isRegionActive ? 'active' : '' }}"
-                    @if($isRegionActive)
-                        aria-current="page"
-                    @endif
+                    class="{{
+                        $isRegionActive
+                            ? 'active'
+                            : ''
+                    }}"
                 >
                     Wilayah
                 </a>
 
                 <a
                     href="{{ route('categories.index') }}"
-                    class="{{ $isCategoryActive ? 'active' : '' }}"
-                    @if($isCategoryActive)
-                        aria-current="page"
-                    @endif
+                    class="{{
+                        $isCategoryActive
+                            ? 'active'
+                            : ''
+                    }}"
                 >
                     Kategori
                 </a>
 
                 <a
                     href="{{ route('fishes.index') }}"
-                    class="{{ $isFishActive ? 'active' : '' }}"
-                    @if($isFishActive)
-                        aria-current="page"
-                    @endif
+                    class="{{
+                        $isFishActive
+                            ? 'active'
+                            : ''
+                    }}"
                 >
                     Ikan
                 </a>
 
-                @auth
+                @auth('web')
                     @if(! $isAdmin)
                         <a
                             href="{{
@@ -1198,9 +1203,6 @@
                                     ? 'active'
                                     : ''
                             }}"
-                            @if($isRequestCreateActive)
-                                aria-current="page"
-                            @endif
                         >
                             Ajukan Data
                         </a>
@@ -1216,42 +1218,18 @@
                                     ? 'active'
                                     : ''
                             }}"
-                            @if($isRequestIndexActive)
-                                aria-current="page"
-                            @endif
                         >
                             Pengajuan Saya
                         </a>
                     @endif
 
                     @if($isAdmin)
-                        <a
-                            href="{{ url('/admin') }}"
-                            class="{{
-                                $isAdminActive
-                                    ? 'active'
-                                    : ''
-                            }}"
-                        >
+                        <a href="{{ url('/admin') }}">
                             Dashboard Admin
                         </a>
                     @endif
 
-                    <form
-                        action="{{
-                            route('public.logout')
-                        }}"
-                        method="POST"
-                    >
-                        @csrf
-
-                        <button
-                            type="submit"
-                            class="logout-btn"
-                        >
-                            Keluar
-                        </button>
-                    </form>
+                    <x-logout-confirmation />
                 @else
                     <a
                         href="{{
@@ -1264,9 +1242,6 @@
                                 ? 'active'
                                 : ''
                         }}"
-                        @if($isLoginActive)
-                            aria-current="page"
-                        @endif
                     >
                         Masuk
                     </a>
@@ -1282,9 +1257,6 @@
                                 ? 'active'
                                 : ''
                         }}"
-                        @if($isRegisterActive)
-                            aria-current="page"
-                        @endif
                     >
                         Daftar
                     </a>
@@ -1356,7 +1328,7 @@
                 <p>
                     {{
                         $layoutSetting?->footer_text
-                        ?? 'Website informasi ikan air tawar berbasis Laravel dan Filament untuk mendukung dokumentasi, edukasi, serta pengelolaan data secara terstruktur.'
+                        ?? 'Website informasi ikan air tawar untuk mendukung dokumentasi, edukasi, dan pengelolaan data secara terstruktur.'
                     }}
                 </p>
             </div>
@@ -1383,7 +1355,7 @@
                         Daftar Ikan
                     </a>
 
-                    @auth
+                    @auth('web')
                         @if(! $isAdmin)
                             <a
                                 href="{{
@@ -1452,94 +1424,124 @@
 </footer>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const navToggle =
-            document.getElementById('navToggle');
-
-        const navContent =
-            document.getElementById('navContent');
-
-        if (!navToggle || !navContent) {
-            return;
-        }
-
-        function openNavigation() {
-            navToggle.classList.add('active');
-            navContent.classList.add('open');
-            document.body.classList.add('menu-open');
-
-            navToggle.setAttribute(
-                'aria-expanded',
-                'true'
-            );
-
-            navToggle.setAttribute(
-                'aria-label',
-                'Tutup menu navigasi'
-            );
-        }
-
-        function closeNavigation() {
-            navToggle.classList.remove('active');
-            navContent.classList.remove('open');
-            document.body.classList.remove('menu-open');
-
-            navToggle.setAttribute(
-                'aria-expanded',
-                'false'
-            );
-
-            navToggle.setAttribute(
-                'aria-label',
-                'Buka menu navigasi'
-            );
-        }
-
-        navToggle.addEventListener(
-            'click',
-            function () {
-                const isOpen =
-                    navContent.classList.contains(
-                        'open'
-                    );
-
-                if (isOpen) {
-                    closeNavigation();
-                    return;
-                }
-
-                openNavigation();
-            }
-        );
-
-        navContent
-            .querySelectorAll('a')
-            .forEach(function (link) {
-                link.addEventListener(
-                    'click',
-                    closeNavigation
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const navToggle =
+                document.getElementById(
+                    'navToggle'
                 );
-            });
 
-        document.addEventListener(
-            'keydown',
-            function (event) {
-                if (event.key === 'Escape') {
-                    closeNavigation();
-                }
-            }
-        );
+            const navContent =
+                document.getElementById(
+                    'navContent'
+                );
 
-        window.addEventListener(
-            'resize',
-            function () {
-                if (window.innerWidth > 1100) {
-                    closeNavigation();
-                }
+            if (!navToggle || !navContent) {
+                return;
             }
-        );
-    });
+
+            function closeNavigation() {
+                navToggle.classList.remove(
+                    'active'
+                );
+
+                navContent.classList.remove(
+                    'open'
+                );
+
+                document.body.classList.remove(
+                    'menu-open'
+                );
+
+                navToggle.setAttribute(
+                    'aria-expanded',
+                    'false'
+                );
+
+                navToggle.setAttribute(
+                    'aria-label',
+                    'Buka menu navigasi'
+                );
+            }
+
+            function openNavigation() {
+                navToggle.classList.add(
+                    'active'
+                );
+
+                navContent.classList.add(
+                    'open'
+                );
+
+                document.body.classList.add(
+                    'menu-open'
+                );
+
+                navToggle.setAttribute(
+                    'aria-expanded',
+                    'true'
+                );
+
+                navToggle.setAttribute(
+                    'aria-label',
+                    'Tutup menu navigasi'
+                );
+            }
+
+            navToggle.addEventListener(
+                'click',
+                function () {
+                    if (
+                        navContent.classList.contains(
+                            'open'
+                        )
+                    ) {
+                        closeNavigation();
+
+                        return;
+                    }
+
+                    openNavigation();
+                }
+            );
+
+            navContent
+                .querySelectorAll('a')
+                .forEach(function (link) {
+                    link.addEventListener(
+                        'click',
+                        closeNavigation
+                    );
+                });
+
+            document.addEventListener(
+                'keydown',
+                function (event) {
+                    if (event.key === 'Escape') {
+                        closeNavigation();
+                    }
+                }
+            );
+
+            window.addEventListener(
+                'resize',
+                function () {
+                    if (
+                        window.innerWidth > 1100
+                    ) {
+                        closeNavigation();
+                    }
+                }
+            );
+        }
+    );
 </script>
+
+<script
+    src="{{ asset('js/csrf-refresh.js') }}"
+    data-csrf-refresh-url="{{ route('csrf.refresh') }}"
+></script>
 
 @stack('scripts')
 </body>

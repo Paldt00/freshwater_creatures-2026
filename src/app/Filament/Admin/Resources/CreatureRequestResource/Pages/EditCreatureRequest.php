@@ -83,7 +83,9 @@ class EditCreatureRequest extends EditRecord
                                     $this
                                         ->getCreatureRequest()
                                         ->created_at
-                                        ?->format('d M Y, H:i')
+                                        ?->format(
+                                            'd M Y, H:i'
+                                        )
                                     ?? '-'
                             ),
                     ])
@@ -158,7 +160,9 @@ class EditCreatureRequest extends EditRecord
                             ->label('Gambar Lama')
                             ->content(
                                 fn (): HtmlString =>
-                                    $this->renderImage('old')
+                                    $this->renderImage(
+                                        'old'
+                                    )
                             ),
 
                         Forms\Components\Placeholder::make(
@@ -167,12 +171,16 @@ class EditCreatureRequest extends EditRecord
                             ->label('Gambar Diajukan')
                             ->content(
                                 fn (): HtmlString =>
-                                    $this->renderImage('new')
+                                    $this->renderImage(
+                                        'new'
+                                    )
                             ),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Catatan')
+                Forms\Components\Section::make(
+                    'Catatan'
+                )
                     ->schema([
                         Forms\Components\Placeholder::make(
                             'request_note_display'
@@ -232,7 +240,9 @@ class EditCreatureRequest extends EditRecord
                                     $this
                                         ->getCreatureRequest()
                                         ->reviewed_at
-                                        ?->format('d M Y, H:i')
+                                        ?->format(
+                                            'd M Y, H:i'
+                                        )
                                     ?? 'Belum diperiksa'
                             ),
                     ])
@@ -241,7 +251,8 @@ class EditCreatureRequest extends EditRecord
                         fn (): bool =>
                             $this
                                 ->getCreatureRequest()
-                                ->request_status === 'pending'
+                                ->request_status
+                            === 'pending'
                     ),
             ]);
     }
@@ -267,15 +278,22 @@ class EditCreatureRequest extends EditRecord
                     fn (): bool =>
                         $this
                             ->getCreatureRequest()
-                            ->request_status === 'pending'
+                            ->request_status
+                        === 'pending'
                 )
                 ->requiresConfirmation()
-                ->modalHeading('Setujui Pengajuan')
+                ->modalHeading(
+                    'Setujui Pengajuan'
+                )
                 ->modalDescription(
                     'Data yang diajukan akan diterapkan ke data ikan dan dipublikasikan.'
                 )
-                ->modalSubmitActionLabel('Setujui')
-                ->modalCancelActionLabel('Batal')
+                ->modalSubmitActionLabel(
+                    'Setujui'
+                )
+                ->modalCancelActionLabel(
+                    'Batal'
+                )
                 ->form([
                     Forms\Components\Textarea::make(
                         'admin_note'
@@ -289,8 +307,11 @@ class EditCreatureRequest extends EditRecord
                         ->rows(4),
                 ])
                 ->action(
-                    fn (array $data): mixed =>
-                        $this->approveRequest($data)
+                    function (array $data): void {
+                        $this->approveRequest(
+                            $data
+                        );
+                    }
                 ),
 
             Actions\Action::make('reject')
@@ -301,20 +322,29 @@ class EditCreatureRequest extends EditRecord
                     fn (): bool =>
                         $this
                             ->getCreatureRequest()
-                            ->request_status === 'pending'
+                            ->request_status
+                        === 'pending'
                 )
                 ->requiresConfirmation()
-                ->modalHeading('Tolak Pengajuan')
+                ->modalHeading(
+                    'Tolak Pengajuan'
+                )
                 ->modalDescription(
                     'Alasan penolakan akan dapat dilihat oleh pengguna.'
                 )
-                ->modalSubmitActionLabel('Tolak')
-                ->modalCancelActionLabel('Batal')
+                ->modalSubmitActionLabel(
+                    'Tolak'
+                )
+                ->modalCancelActionLabel(
+                    'Batal'
+                )
                 ->form([
                     Forms\Components\Textarea::make(
                         'admin_note'
                     )
-                        ->label('Alasan Penolakan')
+                        ->label(
+                            'Alasan Penolakan'
+                        )
                         ->placeholder(
                             'Jelaskan alasan pengajuan ditolak.'
                         )
@@ -322,8 +352,11 @@ class EditCreatureRequest extends EditRecord
                         ->rows(4),
                 ])
                 ->action(
-                    fn (array $data): mixed =>
-                        $this->rejectRequest($data)
+                    function (array $data): void {
+                        $this->rejectRequest(
+                            $data
+                        );
+                    }
                 ),
         ];
     }
@@ -342,7 +375,7 @@ class EditCreatureRequest extends EditRecord
 
     private function approveRequest(
         array $data
-    ): mixed {
+    ): void {
         $creatureRequest =
             $this->getCreatureRequest();
 
@@ -363,11 +396,12 @@ class EditCreatureRequest extends EditRecord
                 ->warning()
                 ->send();
 
-            return null;
+            return;
         }
 
         if (
-            $creatureRequest->request_type === 'update'
+            $creatureRequest->request_type
+            === 'update'
             && ! $creatureRequest->fish
         ) {
             Notification::make()
@@ -380,123 +414,170 @@ class EditCreatureRequest extends EditRecord
                 ->danger()
                 ->send();
 
-            return null;
+            return;
         }
 
-        DB::transaction(function () use (
-            $creatureRequest,
-            $data
-        ): void {
-            if (
-                $creatureRequest->request_type === 'add'
-            ) {
-                Fish::create([
-                    'region_id' =>
-                        $creatureRequest->region_id,
+        $reviewerId = Auth::guard(
+            'admin'
+        )->id();
 
-                    'category_id' =>
-                        $creatureRequest->category_id,
+        if ($reviewerId === null) {
+            Notification::make()
+                ->title(
+                    'Sesi administrator tidak ditemukan.'
+                )
+                ->body(
+                    'Silakan masuk kembali ke panel administrator.'
+                )
+                ->danger()
+                ->send();
 
-                    'name' =>
-                        $creatureRequest->name,
+            return;
+        }
 
-                    'scientific_name' =>
-                        $creatureRequest
-                            ->scientific_name,
+        DB::transaction(
+            function () use (
+                $creatureRequest,
+                $data,
+                $reviewerId
+            ): void {
+                if (
+                    $creatureRequest
+                        ->request_type
+                    === 'add'
+                ) {
+                    Fish::query()->create([
+                        'region_id' =>
+                            $creatureRequest
+                                ->region_id,
 
-                    'image' =>
-                        $creatureRequest->image,
+                        'category_id' =>
+                            $creatureRequest
+                                ->category_id,
 
-                    'habitat' =>
-                        $creatureRequest->habitat,
+                        'name' =>
+                            $creatureRequest
+                                ->name,
 
-                    'food' =>
-                        $creatureRequest->food,
+                        'scientific_name' =>
+                            $creatureRequest
+                                ->scientific_name,
 
-                    'conservation_status' =>
-                        $creatureRequest
-                            ->conservation_status,
+                        'image' =>
+                            $creatureRequest
+                                ->image,
 
-                    'biogeography' =>
-                        $creatureRequest
-                            ->biogeography,
+                        'habitat' =>
+                            $creatureRequest
+                                ->habitat,
 
-                    'characteristics' =>
-                        $creatureRequest
-                            ->characteristics,
+                        'food' =>
+                            $creatureRequest
+                                ->food,
 
-                    'description' =>
-                        $creatureRequest
-                            ->description,
+                        'conservation_status' =>
+                            $creatureRequest
+                                ->conservation_status,
 
-                    'is_featured' => false,
-                    'is_published' => true,
-                ]);
-            }
+                        'biogeography' =>
+                            $creatureRequest
+                                ->biogeography,
 
-            if (
-                $creatureRequest->request_type
-                === 'update'
-            ) {
-                $updateData = [
-                    'region_id' =>
-                        $creatureRequest->region_id,
+                        'characteristics' =>
+                            $creatureRequest
+                                ->characteristics,
 
-                    'category_id' =>
-                        $creatureRequest->category_id,
+                        'description' =>
+                            $creatureRequest
+                                ->description,
 
-                    'name' =>
-                        $creatureRequest->name,
+                        'is_featured' =>
+                            false,
 
-                    'scientific_name' =>
-                        $creatureRequest
-                            ->scientific_name,
-
-                    'habitat' =>
-                        $creatureRequest->habitat,
-
-                    'food' =>
-                        $creatureRequest->food,
-
-                    'conservation_status' =>
-                        $creatureRequest
-                            ->conservation_status,
-
-                    'biogeography' =>
-                        $creatureRequest
-                            ->biogeography,
-
-                    'characteristics' =>
-                        $creatureRequest
-                            ->characteristics,
-
-                    'description' =>
-                        $creatureRequest
-                            ->description,
-                ];
-
-                if ($creatureRequest->image) {
-                    $updateData['image'] =
-                        $creatureRequest->image;
+                        'is_published' =>
+                            true,
+                    ]);
                 }
 
-                $creatureRequest
-                    ->fish
-                    ->update($updateData);
+                if (
+                    $creatureRequest
+                        ->request_type
+                    === 'update'
+                ) {
+                    $updateData = [
+                        'region_id' =>
+                            $creatureRequest
+                                ->region_id,
+
+                        'category_id' =>
+                            $creatureRequest
+                                ->category_id,
+
+                        'name' =>
+                            $creatureRequest
+                                ->name,
+
+                        'scientific_name' =>
+                            $creatureRequest
+                                ->scientific_name,
+
+                        'habitat' =>
+                            $creatureRequest
+                                ->habitat,
+
+                        'food' =>
+                            $creatureRequest
+                                ->food,
+
+                        'conservation_status' =>
+                            $creatureRequest
+                                ->conservation_status,
+
+                        'biogeography' =>
+                            $creatureRequest
+                                ->biogeography,
+
+                        'characteristics' =>
+                            $creatureRequest
+                                ->characteristics,
+
+                        'description' =>
+                            $creatureRequest
+                                ->description,
+                    ];
+
+                    if (
+                        $creatureRequest->image
+                    ) {
+                        $updateData['image'] =
+                            $creatureRequest
+                                ->image;
+                    }
+
+                    $creatureRequest
+                        ->fish
+                        ?->update(
+                            $updateData
+                        );
+                }
+
+                $creatureRequest->update([
+                    'request_status' =>
+                        'approved',
+
+                    'admin_note' =>
+                        $data['admin_note']
+                        ?? $creatureRequest
+                            ->admin_note,
+
+                    'reviewed_by' =>
+                        $reviewerId,
+
+                    'reviewed_at' =>
+                        now(),
+                ]);
             }
-
-            $creatureRequest->update([
-                'request_status' => 'approved',
-
-                'admin_note' =>
-                    $data['admin_note']
-                    ?? $creatureRequest->admin_note,
-
-                'reviewed_by' => Auth::id(),
-
-                'reviewed_at' => now(),
-            ]);
-        });
+        );
 
         Notification::make()
             ->title(
@@ -508,7 +589,7 @@ class EditCreatureRequest extends EditRecord
             ->success()
             ->send();
 
-        return $this->redirect(
+        $this->redirect(
             CreatureRequestResource::getUrl(
                 'index'
             )
@@ -517,7 +598,7 @@ class EditCreatureRequest extends EditRecord
 
     private function rejectRequest(
         array $data
-    ): mixed {
+    ): void {
         $creatureRequest =
             $this->getCreatureRequest();
 
@@ -534,18 +615,39 @@ class EditCreatureRequest extends EditRecord
                 ->warning()
                 ->send();
 
-            return null;
+            return;
+        }
+
+        $reviewerId = Auth::guard(
+            'admin'
+        )->id();
+
+        if ($reviewerId === null) {
+            Notification::make()
+                ->title(
+                    'Sesi administrator tidak ditemukan.'
+                )
+                ->body(
+                    'Silakan masuk kembali ke panel administrator.'
+                )
+                ->danger()
+                ->send();
+
+            return;
         }
 
         $creatureRequest->update([
-            'request_status' => 'rejected',
+            'request_status' =>
+                'rejected',
 
             'admin_note' =>
                 $data['admin_note'],
 
-            'reviewed_by' => Auth::id(),
+            'reviewed_by' =>
+                $reviewerId,
 
-            'reviewed_at' => now(),
+            'reviewed_at' =>
+                now(),
         ]);
 
         Notification::make()
@@ -558,7 +660,7 @@ class EditCreatureRequest extends EditRecord
             ->danger()
             ->send();
 
-        return $this->redirect(
+        $this->redirect(
             CreatureRequestResource::getUrl(
                 'index'
             )
@@ -573,25 +675,31 @@ class EditCreatureRequest extends EditRecord
             Forms\Components\Placeholder::make(
                 "old_{$field}"
             )
-                ->label("{$label} Lama")
+                ->label(
+                    "{$label} Lama"
+                )
                 ->content(
                     fn (): HtmlString =>
-                        $this->renderComparisonText(
-                            $field,
-                            'old'
-                        )
+                        $this
+                            ->renderComparisonText(
+                                $field,
+                                'old'
+                            )
                 ),
 
             Forms\Components\Placeholder::make(
                 "new_{$field}"
             )
-                ->label("{$label} Diajukan")
+                ->label(
+                    "{$label} Diajukan"
+                )
                 ->content(
                     fn (): HtmlString =>
-                        $this->renderComparisonText(
-                            $field,
-                            'new'
-                        )
+                        $this
+                            ->renderComparisonText(
+                                $field,
+                                'new'
+                            )
                 ),
         ];
     }
@@ -601,11 +709,17 @@ class EditCreatureRequest extends EditRecord
         string $side
     ): HtmlString {
         $value = $side === 'old'
-            ? $this->getOldDisplayValue($field)
-            : $this->getNewDisplayValue($field);
+            ? $this->getOldDisplayValue(
+                $field
+            )
+            : $this->getNewDisplayValue(
+                $field
+            );
 
         $changed = $side === 'new'
-            && $this->fieldHasChanged($field);
+            && $this->fieldHasChanged(
+                $field
+            );
 
         $background = $changed
             ? '#fff7ed'
@@ -652,7 +766,9 @@ class EditCreatureRequest extends EditRecord
             ">'
             . $badge
             . '<div>'
-            . nl2br(e($cleanValue))
+            . nl2br(
+                e($cleanValue)
+            )
             . '</div>'
             . '</div>'
         );
@@ -665,10 +781,13 @@ class EditCreatureRequest extends EditRecord
             $this->getCreatureRequest();
 
         $oldImage =
-            $creatureRequest->fish?->image;
+            $creatureRequest
+                ->fish
+                ?->image;
 
         $newImage =
-            $creatureRequest->image;
+            $creatureRequest
+                ->image;
 
         $changed = false;
         $message = null;
@@ -678,7 +797,8 @@ class EditCreatureRequest extends EditRecord
             $imagePath = $oldImage;
 
             if (
-                $creatureRequest->request_type
+                $creatureRequest
+                    ->request_type
                 === 'add'
             ) {
                 $message =
@@ -689,7 +809,8 @@ class EditCreatureRequest extends EditRecord
                 $imagePath = $newImage;
                 $changed = true;
             } elseif (
-                $creatureRequest->request_type
+                $creatureRequest
+                    ->request_type
                 === 'update'
             ) {
                 $imagePath = $oldImage;
@@ -807,7 +928,8 @@ class EditCreatureRequest extends EditRecord
             $this->getCreatureRequest();
 
         [$background, $color] = match (
-            $creatureRequest->request_status
+            $creatureRequest
+                ->request_status
         ) {
             'approved' => [
                 '#ecfdf5',
@@ -861,7 +983,9 @@ class EditCreatureRequest extends EditRecord
             ">'
             . nl2br(
                 e(
-                    $this->cleanText($value)
+                    $this->cleanText(
+                        $value
+                    )
                 )
             )
             . '</div>'
@@ -874,7 +998,8 @@ class EditCreatureRequest extends EditRecord
         $creatureRequest =
             $this->getCreatureRequest();
 
-        $fish = $creatureRequest->fish;
+        $fish =
+            $creatureRequest->fish;
 
         if (! $fish) {
             return 'Tidak ada data lama';
@@ -946,7 +1071,8 @@ class EditCreatureRequest extends EditRecord
         $creatureRequest =
             $this->getCreatureRequest();
 
-        $fish = $creatureRequest->fish;
+        $fish =
+            $creatureRequest->fish;
 
         if (! $fish) {
             return null;
@@ -972,10 +1098,12 @@ class EditCreatureRequest extends EditRecord
 
         return match ($field) {
             'region' =>
-                $creatureRequest->region_id,
+                $creatureRequest
+                    ->region_id,
 
             'category' =>
-                $creatureRequest->category_id,
+                $creatureRequest
+                    ->category_id,
 
             default =>
                 $creatureRequest->{$field},
@@ -989,16 +1117,21 @@ class EditCreatureRequest extends EditRecord
             $this->getCreatureRequest();
 
         if (
-            $creatureRequest->request_type
+            $creatureRequest
+                ->request_type
             === 'add'
         ) {
             return true;
         }
 
         return $this->normalizeValue(
-            $this->getOldRawValue($field)
+            $this->getOldRawValue(
+                $field
+            )
         ) !== $this->normalizeValue(
-            $this->getNewRawValue($field)
+            $this->getNewRawValue(
+                $field
+            )
         );
     }
 
@@ -1006,7 +1139,9 @@ class EditCreatureRequest extends EditRecord
         mixed $value
     ): string {
         $value = html_entity_decode(
-            strip_tags((string) $value)
+            strip_tags(
+                (string) $value
+            )
         );
 
         $value = preg_replace(
@@ -1026,7 +1161,9 @@ class EditCreatureRequest extends EditRecord
         mixed $value
     ): string {
         $value = html_entity_decode(
-            strip_tags((string) $value)
+            strip_tags(
+                (string) $value
+            )
         );
 
         $value = trim($value);
@@ -1040,7 +1177,8 @@ class EditCreatureRequest extends EditRecord
         CreatureRequest
     {
         /** @var CreatureRequest $record */
-        $record = $this->getRecord();
+        $record =
+            $this->getRecord();
 
         $record->loadMissing([
             'user',

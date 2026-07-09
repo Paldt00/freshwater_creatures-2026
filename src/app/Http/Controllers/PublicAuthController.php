@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,14 @@ class PublicAuthController extends Controller
     public function login(
         Request $request
     ): RedirectResponse {
+        $request->merge([
+            'email' => mb_strtolower(
+                trim(
+                    (string) $request->input('email')
+                )
+            ),
+        ]);
+
         $credentials = $request->validate(
             [
                 'email' => [
@@ -79,18 +88,20 @@ class PublicAuthController extends Controller
         }
 
         /*
-         * Regenerasi ID session tanpa menghapus
-         * session guard admin.
+         * Mengganti ID session tanpa mengganti token CSRF.
+         *
+         * Hal ini penting karena akun admin Filament dapat
+         * sedang aktif pada session yang sama melalui guard admin.
          */
-        $request->session()->regenerate();
+        $request->session()->migrate(true);
 
         return $this->redirectAfterLogin(
             'Berhasil Login'
         );
     }
 
-    public function showRegister():
-        View|RedirectResponse {
+    public function showRegister(): View|RedirectResponse
+    {
         if (Auth::guard('web')->check()) {
             return $this->redirectAfterLogin();
         }
@@ -101,6 +112,14 @@ class PublicAuthController extends Controller
     public function register(
         Request $request
     ): RedirectResponse {
+        $request->merge([
+            'email' => mb_strtolower(
+                trim(
+                    (string) $request->input('email')
+                )
+            ),
+        ]);
+
         $data = $request->validate(
             [
                 'name' => [
@@ -170,10 +189,9 @@ class PublicAuthController extends Controller
         Auth::guard('web')->login($user);
 
         /*
-         * Regenerasi ID session tanpa menghapus
-         * session guard admin.
+         * Mengganti ID session tanpa mengganti token CSRF.
          */
-        $request->session()->regenerate();
+        $request->session()->migrate(true);
 
         return redirect()
             ->route('home')
@@ -187,13 +205,19 @@ class PublicAuthController extends Controller
         Request $request
     ): RedirectResponse {
         /*
-         * Hanya logout guard web.
-         * Jangan memakai session()->invalidate(),
-         * karena dapat menghapus login guard admin.
+         * Hanya mengeluarkan akun publik.
+         * Akun pada guard admin tetap login.
          */
         Auth::guard('web')->logout();
 
-        $request->session()->regenerateToken();
+        /*
+         * Jangan memakai invalidate() atau regenerateToken()
+         * karena token CSRF guard admin ikut berubah.
+         *
+         * migrate(true) mengganti ID session tetapi tetap
+         * mempertahankan data login guard admin dan token CSRF.
+         */
+        $request->session()->migrate(true);
 
         return redirect()
             ->route('home')
@@ -203,15 +227,34 @@ class PublicAuthController extends Controller
             );
     }
 
+    public function refreshCsrfToken(
+        Request $request
+    ): JsonResponse {
+        return response()
+            ->json([
+                'token' =>
+                    $request->session()->token(),
+            ])
+            ->withHeaders([
+                'Cache-Control' =>
+                    'no-store, no-cache, must-revalidate, max-age=0',
+
+                'Pragma' =>
+                    'no-cache',
+
+                'Expires' =>
+                    '0',
+            ]);
+    }
+
     private function redirectAfterLogin(
         ?string $message = null
     ): RedirectResponse {
         /*
-         * Login melalui halaman publik tetap diarahkan
+         * Login melalui halaman publik selalu kembali
          * ke website publik.
          *
-         * Login admin dilakukan secara terpisah melalui:
-         * /admin/login
+         * Login panel admin dilakukan melalui /admin/login.
          */
         $redirect = redirect()
             ->route('home');
