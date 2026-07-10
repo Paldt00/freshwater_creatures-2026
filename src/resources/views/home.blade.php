@@ -250,7 +250,7 @@
             </h3>
 
             <p>
-                Pengajuan data dari pengguna diproses melalui persetujuan administrator.
+                Pengajuan akan melalui proses pemeriksaan dan verifikasi.
             </p>
         </div>
     </section>

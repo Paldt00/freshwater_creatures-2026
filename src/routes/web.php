@@ -77,7 +77,11 @@ Route::get(
 Route::get(
     '/search/suggestions',
     [SearchController::class, 'suggestions']
-)->name('search.suggestions');
+)
+    ->middleware(
+        'throttle:search-suggestions'
+    )
+    ->name('search.suggestions');
 
 Route::get(
     '/search',
@@ -92,7 +96,10 @@ Route::get(
 
 Route::get(
     '/csrf-token',
-    [PublicAuthController::class, 'refreshCsrfToken']
+    [
+        PublicAuthController::class,
+        'refreshCsrfToken',
+    ]
 )->name('csrf.refresh');
 
 /*
@@ -109,7 +116,11 @@ Route::get(
 Route::post(
     '/login',
     [PublicAuthController::class, 'login']
-)->name('public.login');
+)
+    ->middleware(
+        'throttle:public-login'
+    )
+    ->name('public.login');
 
 Route::get(
     '/register',
@@ -119,15 +130,19 @@ Route::get(
 Route::post(
     '/register',
     [PublicAuthController::class, 'register']
-)->name('public.register');
+)
+    ->middleware(
+        'throttle:public-register'
+    )
+    ->name('public.register');
 
 /*
 |--------------------------------------------------------------------------
-| Route yang Wajib Login
+| Route Pengguna Terdaftar
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(
+Route::middleware('auth:web')->group(
     function (): void {
         Route::post(
             '/logout',

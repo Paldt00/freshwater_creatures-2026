@@ -394,7 +394,7 @@ class CreatureRequestController extends Controller
             )
             ->with(
                 'success',
-                'Pengajuan berhasil dikirim dan menunggu pemeriksaan administrator.'
+                'Pengajuan berhasil dikirim dan menunggu verifikasi.'
             );
     }
 

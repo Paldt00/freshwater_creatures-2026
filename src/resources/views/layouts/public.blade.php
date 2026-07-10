@@ -1543,6 +1543,11 @@
     data-csrf-refresh-url="{{ route('csrf.refresh') }}"
 ></script>
 
+<script
+    src="{{ asset('js/search-suggestions.js') }}"
+    data-search-suggestions-url="{{ route('search.suggestions') }}"
+></script>
+
 @stack('scripts')
 </body>
 </html>

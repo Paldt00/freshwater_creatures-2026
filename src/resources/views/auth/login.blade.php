@@ -62,6 +62,7 @@
     }
 
     .auth-panel {
+        position: relative;
         width: min(100%, 560px);
         padding: 34px;
         border: 1px solid rgba(255, 255, 255, .78);
@@ -72,8 +73,49 @@
         backdrop-filter: blur(24px);
     }
 
+    .auth-close-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(209, 213, 219, .9);
+        border-radius: 50%;
+        color: var(--muted);
+        background: rgba(255, 255, 255, .86);
+        box-shadow:
+            0 8px 22px rgba(8, 32, 50, .10);
+        text-decoration: none;
+        font-size: 25px;
+        font-weight: 500;
+        line-height: 1;
+        transition:
+            color .2s ease,
+            background-color .2s ease,
+            border-color .2s ease,
+            transform .2s ease,
+            box-shadow .2s ease;
+    }
+
+    .auth-close-button:hover {
+        color: #ffffff;
+        background: #dc2626;
+        border-color: #dc2626;
+        transform: rotate(90deg);
+        box-shadow:
+            0 12px 26px rgba(220, 38, 38, .24);
+    }
+
+    .auth-close-button:focus-visible {
+        outline: 3px solid rgba(14, 165, 233, .42);
+        outline-offset: 3px;
+    }
+
     .auth-panel-header {
         margin-bottom: 24px;
+        padding-right: 48px;
     }
 
     .auth-panel-header h1 {
@@ -195,6 +237,18 @@
             border-radius: 22px;
         }
 
+        .auth-close-button {
+            top: 16px;
+            right: 16px;
+            width: 38px;
+            height: 38px;
+            font-size: 22px;
+        }
+
+        .auth-panel-header {
+            padding-right: 42px;
+        }
+
         .auth-panel-header h1 {
             font-size: 27px;
         }
@@ -226,6 +280,15 @@
     <div class="auth-scene-decoration two"></div>
 
     <div class="auth-panel">
+        <a
+            href="{{ route('home') }}"
+            class="auth-close-button"
+            aria-label="Tutup halaman masuk dan kembali ke beranda"
+            title="Kembali ke beranda"
+        >
+            &times;
+        </a>
+
         <div class="auth-icon">
             🔐
         </div>
