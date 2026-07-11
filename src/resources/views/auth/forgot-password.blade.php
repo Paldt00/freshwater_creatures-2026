@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Masuk')
+@section('title', 'Lupa Kata Sandi')
 
 @push('styles')
     <style>
@@ -54,7 +54,7 @@
         }
 
         .auth-card {
-            width: min(100%, 500px);
+            width: min(100%, 520px);
             position: relative;
             padding: 34px;
             border-radius: 28px;
@@ -93,7 +93,7 @@
         .auth-card h1 {
             margin: 0 42px 10px 0;
             color: var(--navy);
-            font-size: 31px;
+            font-size: 30px;
             line-height: 1.2;
             letter-spacing: -.3px;
         }
@@ -108,56 +108,19 @@
             gap: 18px;
         }
 
-        .password-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .auth-small-link {
-            color: var(--blue);
-            font-weight: 900;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .auth-small-link:hover {
-            color: var(--cyan);
-        }
-
-        .remember-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--muted);
-            font-weight: 800;
-        }
-
-        .remember-row input {
-            width: 18px;
-            height: 18px;
-            flex: 0 0 auto;
-        }
-
         .auth-actions {
             display: grid;
             gap: 12px;
             margin-top: 4px;
         }
 
-        .auth-bottom-text {
-            margin-top: 18px;
-            text-align: center;
-            color: var(--muted);
-        }
-
-        .auth-bottom-text a {
+        .auth-link {
             color: var(--blue);
             font-weight: 900;
+            text-align: center;
         }
 
-        .auth-bottom-text a:hover {
+        .auth-link:hover {
             color: var(--cyan);
         }
 
@@ -172,13 +135,7 @@
             }
 
             .auth-card h1 {
-                font-size: 27px;
-            }
-
-            .password-row {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 6px;
+                font-size: 26px;
             }
         }
     </style>
@@ -207,15 +164,15 @@
             </a>
 
             <h1>
-                Masuk
+                Lupa Kata Sandi
             </h1>
 
             <p>
-                Masuk menggunakan akun yang sudah terdaftar untuk mengakses fitur pengajuan data.
+                Masukkan email akun Anda. Sistem akan mengirimkan tautan untuk membuat kata sandi baru.
             </p>
 
             <form
-                action="{{ route('public.login') }}"
+                action="{{ route('password.email') }}"
                 method="POST"
                 class="auth-form"
             >
@@ -231,7 +188,7 @@
                         id="email"
                         name="email"
                         value="{{ old('email') }}"
-                        placeholder="Masukkan email"
+                        placeholder="Masukkan email akun Anda"
                         autocomplete="email"
                         required
                         autofocus
@@ -244,66 +201,22 @@
                     @enderror
                 </div>
 
-                <div class="field">
-                    <div class="password-row">
-                        <label for="password">
-                            Kata Sandi
-                        </label>
-
-                        <a
-                            href="{{ route('password.request') }}"
-                            class="auth-small-link"
-                        >
-                            Lupa kata sandi?
-                        </a>
-                    </div>
-
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        placeholder="Masukkan kata sandi"
-                        autocomplete="current-password"
-                        required
-                    >
-
-                    @error('password')
-                        <span class="error">
-                            {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                <label class="remember-row">
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        value="1"
-                        {{ old('remember') ? 'checked' : '' }}
-                    >
-
-                    <span>
-                        Ingat saya
-                    </span>
-                </label>
-
                 <div class="auth-actions">
                     <button
                         type="submit"
                         class="btn"
                     >
-                        Masuk
+                        Kirim Link Reset
                     </button>
+
+                    <a
+                        href="{{ route('public.login.form') }}"
+                        class="auth-link"
+                    >
+                        Kembali ke halaman masuk
+                    </a>
                 </div>
             </form>
-
-            <div class="auth-bottom-text">
-                Belum punya akun?
-
-                <a href="{{ route('public.register.form') }}">
-                    Daftar sekarang
-                </a>
-            </div>
         </div>
     </div>
 @endsection
