@@ -108,24 +108,6 @@
             gap: 18px;
         }
 
-        .password-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .auth-small-link {
-            color: var(--blue);
-            font-weight: 900;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .auth-small-link:hover {
-            color: var(--cyan);
-        }
-
         .remember-row {
             display: flex;
             align-items: center;
@@ -173,12 +155,6 @@
 
             .auth-card h1 {
                 font-size: 27px;
-            }
-
-            .password-row {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 6px;
             }
         }
     </style>
@@ -245,18 +221,9 @@
                 </div>
 
                 <div class="field">
-                    <div class="password-row">
-                        <label for="password">
-                            Kata Sandi
-                        </label>
-
-                        <a
-                            href="{{ route('password.request') }}"
-                            class="auth-small-link"
-                        >
-                            Lupa kata sandi?
-                        </a>
-                    </div>
+                    <label for="password">
+                        Kata Sandi
+                    </label>
 
                     <input
                         type="password"

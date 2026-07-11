@@ -914,7 +914,7 @@
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 1.5fr 1fr;
+            grid-template-columns: 1.5fr 1fr 1fr;
             gap: 24px;
         }
 
@@ -1316,6 +1316,24 @@
                         ?? 'Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.'
                     }}
                 </p>
+            </div>
+
+            <div>
+                <span class="footer-title">
+                    Kontak
+                </span>
+
+                <div class="footer-links">
+                    @if($layoutSetting?->contact_email)
+                        <a href="mailto:{{ $layoutSetting->contact_email }}">
+                            {{ $layoutSetting->contact_email }}
+                        </a>
+                    @else
+                        <span>
+                            Email kontak belum diatur.
+                        </span>
+                    @endif
+                </div>
             </div>
 
             <div>

@@ -38,9 +38,7 @@ class WebSettingResource extends Resource
                         Forms\Components\TextInput::make('hero_badge_text')
                             ->label('Teks Badge Hero')
                             ->placeholder('Contoh: Ensiklopedia Ikan Air Tawar')
-                            ->helperText(
-                                'Teks kecil yang tampil di bagian atas hero halaman beranda.'
-                            )
+                            ->helperText('Teks kecil yang tampil di bagian atas hero halaman beranda.')
                             ->maxLength(255),
 
                         Forms\Components\FileUpload::make('logo')
@@ -67,21 +65,27 @@ class WebSettingResource extends Resource
 
                         Forms\Components\Textarea::make('hero_subtitle')
                             ->label('Deskripsi Hero')
-                            ->placeholder(
-                                'Masukkan deskripsi singkat yang tampil pada bagian hero halaman beranda.'
-                            )
+                            ->placeholder('Masukkan deskripsi singkat yang tampil pada bagian hero halaman beranda.')
                             ->rows(4)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
+                Forms\Components\Section::make('Kontak')
+                    ->schema([
+                        Forms\Components\TextInput::make('contact_email')
+                            ->label('Email Kontak')
+                            ->placeholder('Contoh: freshwatercreatures@admin.com')
+                            ->email()
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                    ]),
+
                 Forms\Components\Section::make('Footer')
                     ->schema([
                         Forms\Components\Textarea::make('footer_text')
                             ->label('Teks Footer')
-                            ->placeholder(
-                                'Contoh: Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.'
-                            )
+                            ->placeholder('Contoh: Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
@@ -102,6 +106,11 @@ class WebSettingResource extends Resource
 
                 Tables\Columns\TextColumn::make('hero_badge_text')
                     ->label('Badge Hero')
+                    ->placeholder('Belum diisi')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('contact_email')
+                    ->label('Email Kontak')
                     ->placeholder('Belum diisi')
                     ->toggleable(),
 
