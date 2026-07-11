@@ -78,9 +78,7 @@ Route::get(
     '/search/suggestions',
     [SearchController::class, 'suggestions']
 )
-    ->middleware(
-        'throttle:search-suggestions'
-    )
+    ->middleware('throttle:search-suggestions')
     ->name('search.suggestions');
 
 Route::get(
@@ -117,9 +115,7 @@ Route::post(
     '/login',
     [PublicAuthController::class, 'login']
 )
-    ->middleware(
-        'throttle:public-login'
-    )
+    ->middleware('throttle:public-login')
     ->name('public.login');
 
 Route::get(
@@ -131,9 +127,7 @@ Route::post(
     '/register',
     [PublicAuthController::class, 'register']
 )
-    ->middleware(
-        'throttle:public-register'
-    )
+    ->middleware('throttle:public-register')
     ->name('public.register');
 
 /*
@@ -158,9 +152,7 @@ Route::middleware('auth:web')->group(
                 CreatureRequestController::class,
                 'index',
             ]
-        )->name(
-            'creature-requests.index'
-        );
+        )->name('creature-requests.index');
 
         Route::get(
             '/request/create',
@@ -168,9 +160,7 @@ Route::middleware('auth:web')->group(
                 CreatureRequestController::class,
                 'create',
             ]
-        )->name(
-            'creature-requests.create'
-        );
+        )->name('creature-requests.create');
 
         Route::get(
             '/request/fish-data/{fish:id}',
@@ -178,9 +168,7 @@ Route::middleware('auth:web')->group(
                 CreatureRequestController::class,
                 'fishData',
             ]
-        )->name(
-            'creature-requests.fish-data'
-        );
+        )->name('creature-requests.fish-data');
 
         Route::post(
             '/request',
@@ -188,24 +176,6 @@ Route::middleware('auth:web')->group(
                 CreatureRequestController::class,
                 'store',
             ]
-        )->name(
-            'creature-requests.store'
-        );
+        )->name('creature-requests.store');
     }
 );
-
-/*
-|--------------------------------------------------------------------------
-| URL Lama
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/region/{region:slug}',
-    [RegionController::class, 'show']
-)->name('regions.show.legacy');
-
-Route::get(
-    '/fish/{fish:slug}',
-    [FishController::class, 'show']
-)->name('fishes.show.legacy');

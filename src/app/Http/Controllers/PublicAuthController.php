@@ -87,12 +87,6 @@ class PublicAuthController extends Controller
                 ->onlyInput('email');
         }
 
-        /*
-         * Mengganti ID session tanpa mengganti token CSRF.
-         *
-         * Hal ini penting karena akun admin Filament dapat
-         * sedang aktif pada session yang sama melalui guard admin.
-         */
         $request->session()->migrate(true);
 
         return $this->redirectAfterLogin(
@@ -113,6 +107,10 @@ class PublicAuthController extends Controller
         Request $request
     ): RedirectResponse {
         $request->merge([
+            'name' => trim(
+                (string) $request->input('name')
+            ),
+
             'email' => mb_strtolower(
                 trim(
                     (string) $request->input('email')
@@ -144,10 +142,10 @@ class PublicAuthController extends Controller
             ],
             [
                 'name.required' =>
-                    'Nama wajib diisi.',
+                    'Nama pengguna wajib diisi.',
 
                 'name.max' =>
-                    'Nama maksimal 255 karakter.',
+                    'Nama pengguna maksimal 255 karakter.',
 
                 'email.required' =>
                     'Email wajib diisi.',
@@ -188,9 +186,6 @@ class PublicAuthController extends Controller
 
         Auth::guard('web')->login($user);
 
-        /*
-         * Mengganti ID session tanpa mengganti token CSRF.
-         */
         $request->session()->migrate(true);
 
         return redirect()
@@ -204,19 +199,8 @@ class PublicAuthController extends Controller
     public function logout(
         Request $request
     ): RedirectResponse {
-        /*
-         * Hanya mengeluarkan akun publik.
-         * Akun pada guard admin tetap login.
-         */
         Auth::guard('web')->logout();
 
-        /*
-         * Jangan memakai invalidate() atau regenerateToken()
-         * karena token CSRF guard admin ikut berubah.
-         *
-         * migrate(true) mengganti ID session tetapi tetap
-         * mempertahankan data login guard admin dan token CSRF.
-         */
         $request->session()->migrate(true);
 
         return redirect()
@@ -250,12 +234,6 @@ class PublicAuthController extends Controller
     private function redirectAfterLogin(
         ?string $message = null
     ): RedirectResponse {
-        /*
-         * Login melalui halaman publik selalu kembali
-         * ke website publik.
-         *
-         * Login panel admin dilakukan melalui /admin/login.
-         */
         $redirect = redirect()
             ->route('home');
 

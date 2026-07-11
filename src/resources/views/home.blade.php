@@ -11,6 +11,10 @@
         ? asset('storage/' . $setting->banner_image)
         : null;
 
+    $heroBadgeText = trim(
+        (string) ($setting?->hero_badge_text ?? '')
+    );
+
     $isAdmin = auth()->check()
         && (
             auth()->user()->is_admin
@@ -104,7 +108,11 @@
         <div class="hero-grid">
             <div>
                 <div class="hero-kicker">
-                    🐟 Ensiklopedia Ikan Air Tawar
+                    {{
+                        $heroBadgeText !== ''
+                            ? $heroBadgeText
+                            : 'Ensiklopedia Ikan Air Tawar'
+                    }}
                 </div>
 
                 <h1>

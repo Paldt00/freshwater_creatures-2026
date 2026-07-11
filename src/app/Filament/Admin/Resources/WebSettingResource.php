@@ -15,9 +15,13 @@ class WebSettingResource extends Resource
     protected static ?string $model = WebSetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
     protected static ?string $navigationGroup = 'Pengaturan';
+
     protected static ?string $navigationLabel = 'Pengaturan Website';
+
     protected static ?string $modelLabel = 'Pengaturan Website';
+
     protected static ?string $pluralModelLabel = 'Pengaturan Website';
 
     public static function form(Form $form): Form
@@ -31,8 +35,16 @@ class WebSettingResource extends Resource
                             ->required()
                             ->maxLength(255),
 
+                        Forms\Components\TextInput::make('hero_badge_text')
+                            ->label('Teks Badge Hero')
+                            ->placeholder('Contoh: Ensiklopedia Ikan Air Tawar')
+                            ->helperText(
+                                'Teks kecil yang tampil di bagian atas hero halaman beranda.'
+                            )
+                            ->maxLength(255),
+
                         Forms\Components\FileUpload::make('logo')
-                            ->label('Logo')
+                            ->label('Logo Website')
                             ->image()
                             ->directory('web-settings/logo')
                             ->visibility('public')
@@ -49,56 +61,30 @@ class WebSettingResource extends Resource
 
                         Forms\Components\TextInput::make('hero_title')
                             ->label('Judul Hero')
-                            ->maxLength(255),
+                            ->placeholder('Contoh: Ensiklopedia Digital Ikan Air Tawar')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
 
                         Forms\Components\Textarea::make('hero_subtitle')
                             ->label('Deskripsi Hero')
+                            ->placeholder(
+                                'Masukkan deskripsi singkat yang tampil pada bagian hero halaman beranda.'
+                            )
                             ->rows(4)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Kontak')
+                Forms\Components\Section::make('Footer')
                     ->schema([
-                        Forms\Components\TextInput::make('contact_email')
-                            ->label('Email Kontak')
-                            ->email()
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('contact_phone')
-                            ->label('Nomor Telepon')
-                            ->maxLength(255),
-
-                        Forms\Components\Textarea::make('address')
-                            ->label('Alamat')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Media Sosial dan Footer')
-                    ->schema([
-                        Forms\Components\TextInput::make('instagram_url')
-                            ->label('Instagram URL')
-                            ->url()
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('youtube_url')
-                            ->label('YouTube URL')
-                            ->url()
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('tiktok_url')
-                            ->label('TikTok URL')
-                            ->url()
-                            ->maxLength(255),
-
                         Forms\Components\Textarea::make('footer_text')
                             ->label('Teks Footer')
+                            ->placeholder(
+                                'Contoh: Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.'
+                            )
                             ->rows(3)
                             ->columnSpanFull(),
-                    ])
-                    ->columns(3),
+                    ]),
             ]);
     }
 
@@ -114,8 +100,9 @@ class WebSettingResource extends Resource
                     ->label('Nama Website')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('contact_email')
-                    ->label('Email')
+                Tables\Columns\TextColumn::make('hero_badge_text')
+                    ->label('Badge Hero')
+                    ->placeholder('Belum diisi')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('updated_at')

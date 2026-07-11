@@ -311,7 +311,7 @@
 
             <div class="field">
                 <label for="name">
-                    Nama
+                    Nama Pengguna
                 </label>
 
                 <input
@@ -319,7 +319,7 @@
                     name="name"
                     id="name"
                     value="{{ old('name') }}"
-                    placeholder="Masukkan nama lengkap"
+                    placeholder="Masukkan nama pengguna"
                     autocomplete="name"
                     autofocus
                     required

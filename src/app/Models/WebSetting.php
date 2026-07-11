@@ -8,6 +8,7 @@ class WebSetting extends Model
 {
     protected $fillable = [
         'site_name',
+        'hero_badge_text',
         'logo',
         'banner_image',
         'hero_title',

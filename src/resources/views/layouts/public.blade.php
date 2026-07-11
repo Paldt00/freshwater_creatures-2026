@@ -144,9 +144,9 @@
         }
 
         .nav-inner {
-            max-width: 1180px;
+            width: min(1540px, calc(100% - 40px));
             margin: 0 auto;
-            padding: 14px 20px;
+            padding: 14px 0;
             display: flex;
             align-items: center;
             gap: 18px;
@@ -158,7 +158,8 @@
             gap: 12px;
             font-weight: 900;
             color: var(--navy);
-            flex-shrink: 0;
+            flex: 0 0 auto;
+            min-width: 330px;
         }
 
         .brand-logo {
@@ -188,7 +189,7 @@
         }
 
         .brand-name {
-            max-width: 250px;
+            max-width: 260px;
             line-height: 1.25;
         }
 
@@ -251,14 +252,14 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 6px;
-            flex-wrap: wrap;
+            gap: 5px;
+            flex-wrap: nowrap;
             color: var(--muted);
             font-weight: 800;
         }
 
         .nav-menu a {
-            padding: 9px 12px;
+            padding: 9px 11px;
             border-radius: 999px;
             transition: .2s ease;
             white-space: nowrap;
@@ -281,13 +282,10 @@
                 0 8px 18px rgba(15, 76, 117, .22);
         }
 
-        .nav-menu form {
-            margin: 0;
-        }
-
         .nav-search {
-            width: 260px;
-            min-width: 230px;
+            width: 270px;
+            min-width: 240px;
+            flex: 0 0 270px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -307,6 +305,13 @@
             border-color: var(--cyan);
             box-shadow:
                 0 0 0 4px rgba(0, 180, 216, .12);
+        }
+
+        .nav-user-actions {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .btn,
@@ -909,7 +914,7 @@
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr;
+            grid-template-columns: 1.5fr 1fr;
             gap: 24px;
         }
 
@@ -938,13 +943,36 @@
             font-size: 14px;
         }
 
+        @media (max-width: 1350px) {
+            .brand {
+                min-width: 280px;
+            }
+
+            .brand-name {
+                max-width: 220px;
+            }
+
+            .nav-menu a {
+                padding-inline: 9px;
+            }
+
+            .nav-search {
+                width: 245px;
+                min-width: 220px;
+                flex-basis: 245px;
+            }
+        }
+
         @media (max-width: 1100px) {
             .nav-inner {
+                width: min(1180px, calc(100% - 28px));
                 flex-wrap: wrap;
                 gap: 12px;
+                padding: 12px 0;
             }
 
             .brand {
+                min-width: 0;
                 max-width: calc(100% - 60px);
             }
 
@@ -984,23 +1012,27 @@
                 border-radius: 14px;
             }
 
-            .nav-menu form {
+            .nav-search {
                 width: 100%;
+                min-width: 0;
+                flex: none;
             }
 
-            .logout-confirmation-wrapper {
+            .nav-user-actions {
                 width: 100%;
+                flex-direction: column;
+                align-items: stretch;
             }
 
+            .nav-user-actions .btn,
             .logout-btn {
                 width: 100%;
                 border-radius: 14px;
                 padding: 11px 14px;
             }
 
-            .nav-search {
+            .logout-confirmation-wrapper {
                 width: 100%;
-                min-width: 0;
             }
 
             .hero-grid,
@@ -1015,7 +1047,7 @@
 
         @media (max-width: 780px) {
             .nav-inner {
-                padding: 12px 14px;
+                padding: 12px 0;
             }
 
             .brand-name {
@@ -1110,12 +1142,7 @@
             <span class="brand-logo">
                 @if($layoutSetting?->logo)
                     <img
-                        src="{{
-                            asset(
-                                'storage/'
-                                . $layoutSetting->logo
-                            )
-                        }}"
+                        src="{{ asset('storage/' . $layoutSetting->logo) }}"
                         alt="Logo {{ $siteName }}"
                     >
                 @else
@@ -1148,44 +1175,28 @@
             <div class="nav-menu">
                 <a
                     href="{{ route('home') }}"
-                    class="{{
-                        $isHomeActive
-                            ? 'active'
-                            : ''
-                    }}"
+                    class="{{ $isHomeActive ? 'active' : '' }}"
                 >
                     Beranda
                 </a>
 
                 <a
                     href="{{ route('regions.index') }}"
-                    class="{{
-                        $isRegionActive
-                            ? 'active'
-                            : ''
-                    }}"
+                    class="{{ $isRegionActive ? 'active' : '' }}"
                 >
                     Wilayah
                 </a>
 
                 <a
                     href="{{ route('categories.index') }}"
-                    class="{{
-                        $isCategoryActive
-                            ? 'active'
-                            : ''
-                    }}"
+                    class="{{ $isCategoryActive ? 'active' : '' }}"
                 >
                     Kategori
                 </a>
 
                 <a
                     href="{{ route('fishes.index') }}"
-                    class="{{
-                        $isFishActive
-                            ? 'active'
-                            : ''
-                    }}"
+                    class="{{ $isFishActive ? 'active' : '' }}"
                 >
                     Ikan
                 </a>
@@ -1193,31 +1204,15 @@
                 @auth('web')
                     @if(! $isAdmin)
                         <a
-                            href="{{
-                                route(
-                                    'creature-requests.create'
-                                )
-                            }}"
-                            class="{{
-                                $isRequestCreateActive
-                                    ? 'active'
-                                    : ''
-                            }}"
+                            href="{{ route('creature-requests.create') }}"
+                            class="{{ $isRequestCreateActive ? 'active' : '' }}"
                         >
                             Ajukan Data
                         </a>
 
                         <a
-                            href="{{
-                                route(
-                                    'creature-requests.index'
-                                )
-                            }}"
-                            class="{{
-                                $isRequestIndexActive
-                                    ? 'active'
-                                    : ''
-                            }}"
+                            href="{{ route('creature-requests.index') }}"
+                            class="{{ $isRequestIndexActive ? 'active' : '' }}"
                         >
                             Pengajuan Saya
                         </a>
@@ -1228,38 +1223,6 @@
                             Dashboard Admin
                         </a>
                     @endif
-
-                    <x-logout-confirmation />
-                @else
-                    <a
-                        href="{{
-                            route(
-                                'public.login.form'
-                            )
-                        }}"
-                        class="{{
-                            $isLoginActive
-                                ? 'active'
-                                : ''
-                        }}"
-                    >
-                        Masuk
-                    </a>
-
-                    <a
-                        href="{{
-                            route(
-                                'public.register.form'
-                            )
-                        }}"
-                        class="{{
-                            $isRegisterActive
-                                ? 'active'
-                                : ''
-                        }}"
-                    >
-                        Daftar
-                    </a>
                 @endauth
             </div>
 
@@ -1281,6 +1244,28 @@
                     Cari
                 </button>
             </form>
+
+            <div class="nav-user-actions">
+                @auth('web')
+                    <x-public-user-badge :user="$authUser" />
+
+                    <x-logout-confirmation />
+                @else
+                    <a
+                        href="{{ route('public.login.form') }}"
+                        class="btn secondary {{ $isLoginActive ? 'active' : '' }}"
+                    >
+                        Masuk
+                    </a>
+
+                    <a
+                        href="{{ route('public.register.form') }}"
+                        class="btn {{ $isRegisterActive ? 'active' : '' }}"
+                    >
+                        Daftar
+                    </a>
+                @endauth
+            </div>
         </div>
     </div>
 </nav>
@@ -1328,7 +1313,7 @@
                 <p>
                     {{
                         $layoutSetting?->footer_text
-                        ?? 'Website informasi ikan air tawar untuk mendukung dokumentasi, edukasi, dan pengelolaan data secara terstruktur.'
+                        ?? 'Website edukatif untuk mendukung dokumentasi keanekaragaman ikan air tawar.'
                     }}
                 </p>
             </div>
@@ -1357,61 +1342,11 @@
 
                     @auth('web')
                         @if(! $isAdmin)
-                            <a
-                                href="{{
-                                    route(
-                                        'creature-requests.index'
-                                    )
-                                }}"
-                            >
+                            <a href="{{ route('creature-requests.index') }}">
                                 Pengajuan Saya
                             </a>
                         @endif
                     @endauth
-                </div>
-            </div>
-
-            <div>
-                <span class="footer-title">
-                    Kontak
-                </span>
-
-                <div class="footer-links">
-                    @if($layoutSetting?->contact_email)
-                        <a
-                            href="mailto:{{
-                                $layoutSetting->contact_email
-                            }}"
-                        >
-                            Email:
-                            {{ $layoutSetting->contact_email }}
-                        </a>
-                    @else
-                        <span>
-                            Email: admin@ikan.test
-                        </span>
-                    @endif
-
-                    @if($layoutSetting?->contact_phone)
-                        <a
-                            href="tel:{{
-                                preg_replace(
-                                    '/[^0-9+]/',
-                                    '',
-                                    $layoutSetting->contact_phone
-                                )
-                            }}"
-                        >
-                            Telepon:
-                            {{ $layoutSetting->contact_phone }}
-                        </a>
-                    @endif
-
-                    @if($layoutSetting?->address)
-                        <span>
-                            {{ $layoutSetting->address }}
-                        </span>
-                    @endif
                 </div>
             </div>
         </div>
