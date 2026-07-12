@@ -11,3 +11,4 @@ src/node_modules/
 .env
 src/.env
 src/.env.backup
+src/public/vendor/livewire/

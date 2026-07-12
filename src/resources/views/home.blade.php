@@ -266,7 +266,7 @@
     <div class="section-head">
         <div>
             <h2>
-                Wilayah Persebaran
+                Wilayah
             </h2>
 
             <p>
